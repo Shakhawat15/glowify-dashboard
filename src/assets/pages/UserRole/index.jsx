@@ -1,5 +1,10 @@
 import MasterLayout from "../../components/MasterLayout/MasterLayout";
+import UserRoleList from "../../components/UserRole/UserRoleList";
 
 export default function index() {
-  return <MasterLayout>User Role List</MasterLayout>;
+  return (
+    <MasterLayout>
+      <UserRoleList />
+    </MasterLayout>
+  );
 }
