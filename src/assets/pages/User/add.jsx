@@ -1,5 +1,10 @@
 import MasterLayout from "../../components/MasterLayout/MasterLayout";
+import AddUser from "../../components/User/AddUser";
 
 export default function add() {
-  return <MasterLayout>Add User</MasterLayout>;
+  return (
+    <MasterLayout>
+      <AddUser />
+    </MasterLayout>
+  );
 }
