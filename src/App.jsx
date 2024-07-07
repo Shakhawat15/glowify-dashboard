@@ -21,7 +21,7 @@ function App() {
         <Route exact path="/" element={<Dashboard />} />
         <Route path="/users" element={<UserList />} />
         <Route path="/user-create" element={<UserCreate />} />
-        <Route path="/user-role" element={<UserRoleList />} />
+        <Route path="/user-roles" element={<UserRoleList />} />
         <Route path="/user-role-create" element={<UserRoleCreate />} />
         <Route path="/brands" element={<BrandList />} />
         <Route path="/brand-create" element={<BrandCreate />} />
