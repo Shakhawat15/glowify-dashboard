@@ -1,23 +1,22 @@
 import {
-  MagnifyingGlassIcon,
   ChevronUpDownIcon,
+  MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
-import { PencilIcon, UserPlusIcon } from "@heroicons/react/24/solid";
+import { PencilIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
 import {
-  Card,
-  CardHeader,
-  Input,
-  Typography,
+  Avatar,
   Button,
+  Card,
   CardBody,
-  Chip,
   CardFooter,
+  CardHeader,
+  IconButton,
+  Input,
+  Tab,
   Tabs,
   TabsHeader,
-  Tab,
-  Avatar,
-  IconButton,
   Tooltip,
+  Typography,
 } from "@material-tailwind/react";
 import { useNavigate } from "react-router-dom";
 
@@ -36,60 +35,73 @@ const TABS = [
   },
 ];
 
-const TABLE_HEAD = ["Member", "Function", "Status", "Employed", ""];
+const TABLE_HEAD = [
+  "Product",
+  "Brand",
+  "Category",
+  "RRP",
+  "Discount",
+  "Quantity",
+  "Action",
+];
 
 const TABLE_ROWS = [
   {
     img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-3.jpg",
-    name: "John Michael",
-    email: "john@creative-tim.com",
-    job: "Manager",
-    org: "Organization",
-    online: true,
+    title: "Vitamin C Serum",
+    rrp: 100,
+    discount: 10,
+    brand: "Lancome",
+    category: "Skincare",
+    quantity: 0,
     date: "23/04/18",
   },
   {
     img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-2.jpg",
-    name: "Alexa Liras",
-    email: "alexa@creative-tim.com",
-    job: "Programator",
-    org: "Developer",
-    online: false,
+    title: "Hydrating Facial Cleanser",
+    rrp: 100,
+    discount: 10,
+    brand: "Makeup",
+    category: "Haircare",
+    quantity: 20,
     date: "23/04/18",
   },
   {
     img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-1.jpg",
-    name: "Laurent Perrier",
-    email: "laurent@creative-tim.com",
-    job: "Executive",
-    org: "Projects",
-    online: false,
+    title: "Anti-Aging Night Cream",
+    rrp: 100,
+    discount: 10,
+    brand: "Clinique",
+    category: "Fragrances",
+    quantity: 20,
     date: "19/09/17",
   },
   {
     img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-4.jpg",
-    name: "Michael Levi",
-    email: "michael@creative-tim.com",
-    job: "Programator",
-    org: "Developer",
-    online: true,
+    title: "Matte Liquid Foundation",
+    rrp: 100,
+    discount: 10,
+    brand: "NARS",
+    category: "Fragrances",
+    quantity: 10,
     date: "24/12/08",
   },
   {
     img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-5.jpg",
-    name: "Richard Gran",
-    email: "richard@creative-tim.com",
-    job: "Manager",
-    org: "Executive",
-    online: false,
+    title: "Volumizing Mascara",
+    rrp: 100,
+    discount: 10,
+    brand: "Glossier",
+    category: "Skincare",
+    quantity: 5,
     date: "04/10/21",
   },
 ];
 export default function ProductList() {
   const navigate = useNavigate();
 
-  const addUser = () => {
-    navigate("/user-create");
+  const addProduct = () => {
+    navigate("/product-create");
   };
 
   return (
@@ -98,10 +110,10 @@ export default function ProductList() {
         <div className="mb-8 flex items-center justify-between gap-8">
           <div>
             <Typography variant="h5" color="blue-gray">
-              Members list
+              Product list
             </Typography>
             <Typography color="gray" className="mt-1 font-normal">
-              See information about all members
+              See information about all products
             </Typography>
           </div>
           <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
@@ -109,11 +121,11 @@ export default function ProductList() {
               view all
             </Button>
             <Button
-              onClick={addUser}
+              onClick={addProduct}
               className="flex items-center gap-3"
               size="sm"
             >
-              <UserPlusIcon strokeWidth={2} className="h-4 w-4" /> Add User
+              <PlusIcon strokeWidth={2} className="h-4 w-4" /> Add Product
             </Button>
           </div>
         </div>
@@ -160,31 +172,34 @@ export default function ProductList() {
           </thead>
           <tbody>
             {TABLE_ROWS.map(
-              ({ img, name, email, job, org, online, date }, index) => {
+              (
+                { img, title, brand, category, quantity, rrp, discount },
+                index
+              ) => {
                 const isLast = index === TABLE_ROWS.length - 1;
                 const classes = isLast
                   ? "p-4"
                   : "p-4 border-b border-blue-gray-50";
 
                 return (
-                  <tr key={name}>
+                  <tr key={title}>
                     <td className={classes}>
                       <div className="flex items-center gap-3">
-                        <Avatar src={img} alt={name} size="sm" />
+                        <Avatar src={img} alt={title} size="sm" />
                         <div className="flex flex-col">
                           <Typography
                             variant="small"
                             color="blue-gray"
                             className="font-normal"
                           >
-                            {name}
+                            {title}
                           </Typography>
                           <Typography
                             variant="small"
                             color="blue-gray"
                             className="font-normal opacity-70"
                           >
-                            {email}
+                            {category}
                           </Typography>
                         </div>
                       </div>
@@ -196,18 +211,22 @@ export default function ProductList() {
                           color="blue-gray"
                           className="font-normal"
                         >
-                          {job}
-                        </Typography>
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-normal opacity-70"
-                        >
-                          {org}
+                          {brand}
                         </Typography>
                       </div>
                     </td>
                     <td className={classes}>
+                      <div className="flex flex-col">
+                        <Typography
+                          variant="small"
+                          color="blue-gray"
+                          className="font-normal"
+                        >
+                          {category}
+                        </Typography>
+                      </div>
+                    </td>
+                    {/* <td className={classes}>
                       <div className="w-max">
                         <Chip
                           variant="ghost"
@@ -216,6 +235,15 @@ export default function ProductList() {
                           color={online ? "green" : "blue-gray"}
                         />
                       </div>
+                    </td> */}
+                    <td className={classes}>
+                      <Typography
+                        variant="small"
+                        color="blue-gray"
+                        className="font-normal"
+                      >
+                        {rrp}
+                      </Typography>
                     </td>
                     <td className={classes}>
                       <Typography
@@ -223,13 +251,27 @@ export default function ProductList() {
                         color="blue-gray"
                         className="font-normal"
                       >
-                        {date}
+                        {discount}
                       </Typography>
                     </td>
                     <td className={classes}>
-                      <Tooltip content="Edit User">
+                      <Typography
+                        variant="small"
+                        color="blue-gray"
+                        className="font-normal"
+                      >
+                        {quantity}
+                      </Typography>
+                    </td>
+                    <td className={classes}>
+                      <Tooltip content="Edit Product">
                         <IconButton variant="text">
                           <PencilIcon className="h-4 w-4" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip content="Delete Product">
+                        <IconButton variant="text">
+                          <TrashIcon className="h-4 w-4" />
                         </IconButton>
                       </Tooltip>
                     </td>

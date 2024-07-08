@@ -1,23 +1,23 @@
 import {
-  MagnifyingGlassIcon,
   ChevronUpDownIcon,
+  MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
-import { PencilIcon, UserPlusIcon } from "@heroicons/react/24/solid";
+import { PencilIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
 import {
-  Card,
-  CardHeader,
-  Input,
-  Typography,
+  Avatar,
   Button,
+  Card,
   CardBody,
-  Chip,
   CardFooter,
+  CardHeader,
+  Chip,
+  IconButton,
+  Input,
+  Tab,
   Tabs,
   TabsHeader,
-  Tab,
-  Avatar,
-  IconButton,
   Tooltip,
+  Typography,
 } from "@material-tailwind/react";
 import { useNavigate } from "react-router-dom";
 
@@ -36,51 +36,43 @@ const TABS = [
   },
 ];
 
-const TABLE_HEAD = ["Member", "Function", "Status", "Employed", ""];
+const TABLE_HEAD = [
+  "Title",
+  "Icon",
+  "Image",
+  "Create Date",
+  "Status",
+  "Action",
+];
 
 const TABLE_ROWS = [
   {
     img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-3.jpg",
-    name: "John Michael",
-    email: "john@creative-tim.com",
-    job: "Manager",
-    org: "Organization",
+    name: "Fragrances",
     online: true,
     date: "23/04/18",
   },
   {
     img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-2.jpg",
-    name: "Alexa Liras",
-    email: "alexa@creative-tim.com",
-    job: "Programator",
-    org: "Developer",
+    name: "Skincare",
     online: false,
     date: "23/04/18",
   },
   {
     img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-1.jpg",
-    name: "Laurent Perrier",
-    email: "laurent@creative-tim.com",
-    job: "Executive",
-    org: "Projects",
+    name: "Makeup",
     online: false,
     date: "19/09/17",
   },
   {
     img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-4.jpg",
-    name: "Michael Levi",
-    email: "michael@creative-tim.com",
-    job: "Programator",
-    org: "Developer",
+    name: "Haircare",
     online: true,
     date: "24/12/08",
   },
   {
     img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-5.jpg",
-    name: "Richard Gran",
-    email: "richard@creative-tim.com",
-    job: "Manager",
-    org: "Executive",
+    name: "Fragrances",
     online: false,
     date: "04/10/21",
   },
@@ -88,8 +80,8 @@ const TABLE_ROWS = [
 export default function CategoryList() {
   const navigate = useNavigate();
 
-  const addUser = () => {
-    navigate("/user-create");
+  const addCategory = () => {
+    navigate("/category-create");
   };
 
   return (
@@ -98,10 +90,10 @@ export default function CategoryList() {
         <div className="mb-8 flex items-center justify-between gap-8">
           <div>
             <Typography variant="h5" color="blue-gray">
-              Members list
+              Category list
             </Typography>
             <Typography color="gray" className="mt-1 font-normal">
-              See information about all members
+              See information about all category
             </Typography>
           </div>
           <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
@@ -109,11 +101,11 @@ export default function CategoryList() {
               view all
             </Button>
             <Button
-              onClick={addUser}
+              onClick={addCategory}
               className="flex items-center gap-3"
               size="sm"
             >
-              <UserPlusIcon strokeWidth={2} className="h-4 w-4" /> Add User
+              <PlusIcon strokeWidth={2} className="h-4 w-4" /> Add Category
             </Button>
           </div>
         </div>
@@ -159,84 +151,71 @@ export default function CategoryList() {
             </tr>
           </thead>
           <tbody>
-            {TABLE_ROWS.map(
-              ({ img, name, email, job, org, online, date }, index) => {
-                const isLast = index === TABLE_ROWS.length - 1;
-                const classes = isLast
-                  ? "p-4"
-                  : "p-4 border-b border-blue-gray-50";
+            {TABLE_ROWS.map(({ img, name, online, date }, index) => {
+              const isLast = index === TABLE_ROWS.length - 1;
+              const classes = isLast
+                ? "p-4"
+                : "p-4 border-b border-blue-gray-50";
 
-                return (
-                  <tr key={name}>
-                    <td className={classes}>
-                      <div className="flex items-center gap-3">
-                        <Avatar src={img} alt={name} size="sm" />
-                        <div className="flex flex-col">
-                          <Typography
-                            variant="small"
-                            color="blue-gray"
-                            className="font-normal"
-                          >
-                            {name}
-                          </Typography>
-                          <Typography
-                            variant="small"
-                            color="blue-gray"
-                            className="font-normal opacity-70"
-                          >
-                            {email}
-                          </Typography>
-                        </div>
-                      </div>
-                    </td>
-                    <td className={classes}>
+              return (
+                <tr key={name}>
+                  <td className={classes}>
+                    <div className="flex items-center gap-3">
                       <div className="flex flex-col">
                         <Typography
                           variant="small"
                           color="blue-gray"
                           className="font-normal"
                         >
-                          {job}
-                        </Typography>
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-normal opacity-70"
-                        >
-                          {org}
+                          {name}
                         </Typography>
                       </div>
-                    </td>
-                    <td className={classes}>
-                      <div className="w-max">
-                        <Chip
-                          variant="ghost"
-                          size="sm"
-                          value={online ? "online" : "offline"}
-                          color={online ? "green" : "blue-gray"}
-                        />
-                      </div>
-                    </td>
-                    <td className={classes}>
-                      <Typography
-                        variant="small"
-                        color="blue-gray"
-                        className="font-normal"
-                      >
-                        {date}
-                      </Typography>
-                    </td>
-                    <td className={classes}>
-                      <Tooltip content="Edit User">
-                        <IconButton variant="text">
-                          <PencilIcon className="h-4 w-4" />
-                        </IconButton>
-                      </Tooltip>
-                    </td>
-                  </tr>
-                );
-              }
-            )}
+                    </div>
+                  </td>
+                  <td className={classes}>
+                    <div className="flex items-center gap-3">
+                      <Avatar src={img} alt={name} size="sm" />
+                    </div>
+                  </td>
+                  <td className={classes}>
+                    <div className="flex items-center gap-3">
+                      <Avatar src={img} alt={name} size="sm" />
+                    </div>
+                  </td>
+                  <td className={classes}>
+                    <Typography
+                      variant="small"
+                      color="blue-gray"
+                      className="font-normal"
+                    >
+                      {date}
+                    </Typography>
+                  </td>
+                  <td className={classes}>
+                    <div className="w-max">
+                      <Chip
+                        variant="ghost"
+                        size="sm"
+                        value={online ? "online" : "offline"}
+                        color={online ? "green" : "blue-gray"}
+                      />
+                    </div>
+                  </td>
+                  <td className={classes}>
+                    <Tooltip content="Edit Category">
+                      <IconButton variant="text">
+                        <PencilIcon className="h-4 w-4" />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip content="Delete Category">
+                      <IconButton variant="text">
+                        <TrashIcon className="h-4 w-4" />
+                      </IconButton>
+                    </Tooltip>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </CardBody>

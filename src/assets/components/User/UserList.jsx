@@ -2,6 +2,7 @@ import {
   MagnifyingGlassIcon,
   ChevronUpDownIcon,
 } from "@heroicons/react/24/outline";
+import { TrashIcon } from "@heroicons/react/24/solid";
 import { PencilIcon, UserPlusIcon } from "@heroicons/react/24/solid";
 import {
   Card,
@@ -36,7 +37,7 @@ const TABS = [
   },
 ];
 
-const TABLE_HEAD = ["Member", "Function", "Status", "Employed", ""];
+const TABLE_HEAD = ["User", "Phone", "Email", "Role", "Status", "Action"];
 
 const TABLE_ROWS = [
   {
@@ -44,7 +45,7 @@ const TABLE_ROWS = [
     name: "John Michael",
     email: "john@creative-tim.com",
     job: "Manager",
-    org: "Organization",
+    phone: "01706695915",
     online: true,
     date: "23/04/18",
   },
@@ -53,7 +54,7 @@ const TABLE_ROWS = [
     name: "Alexa Liras",
     email: "alexa@creative-tim.com",
     job: "Programator",
-    org: "Developer",
+    phone: "01706695915",
     online: false,
     date: "23/04/18",
   },
@@ -62,7 +63,7 @@ const TABLE_ROWS = [
     name: "Laurent Perrier",
     email: "laurent@creative-tim.com",
     job: "Executive",
-    org: "Projects",
+    phone: "01706695915",
     online: false,
     date: "19/09/17",
   },
@@ -71,7 +72,7 @@ const TABLE_ROWS = [
     name: "Michael Levi",
     email: "michael@creative-tim.com",
     job: "Programator",
-    org: "Developer",
+    phone: "01706695915",
     online: true,
     date: "24/12/08",
   },
@@ -80,7 +81,7 @@ const TABLE_ROWS = [
     name: "Richard Gran",
     email: "richard@creative-tim.com",
     job: "Manager",
-    org: "Executive",
+    phone: "01706695915",
     online: false,
     date: "04/10/21",
   },
@@ -98,10 +99,10 @@ export default function UserList() {
         <div className="mb-8 flex items-center justify-between gap-8">
           <div>
             <Typography variant="h5" color="blue-gray">
-              Members list
+              User list
             </Typography>
             <Typography color="gray" className="mt-1 font-normal">
-              See information about all members
+              See information about all users
             </Typography>
           </div>
           <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
@@ -160,7 +161,7 @@ export default function UserList() {
           </thead>
           <tbody>
             {TABLE_ROWS.map(
-              ({ img, name, email, job, org, online, date }, index) => {
+              ({ img, name, email, job, phone, online }, index) => {
                 const isLast = index === TABLE_ROWS.length - 1;
                 const classes = isLast
                   ? "p-4"
@@ -194,18 +195,29 @@ export default function UserList() {
                         <Typography
                           variant="small"
                           color="blue-gray"
-                          className="font-normal"
-                        >
-                          {job}
-                        </Typography>
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
                           className="font-normal opacity-70"
                         >
-                          {org}
+                          {phone}
                         </Typography>
                       </div>
+                    </td>
+                    <td className={classes}>
+                      <Typography
+                        variant="small"
+                        color="blue-gray"
+                        className="font-normal"
+                      >
+                        {email}
+                      </Typography>
+                    </td>
+                    <td className={classes}>
+                      <Typography
+                        variant="small"
+                        color="blue-gray"
+                        className="font-normal"
+                      >
+                        {job}
+                      </Typography>
                     </td>
                     <td className={classes}>
                       <div className="w-max">
@@ -218,18 +230,14 @@ export default function UserList() {
                       </div>
                     </td>
                     <td className={classes}>
-                      <Typography
-                        variant="small"
-                        color="blue-gray"
-                        className="font-normal"
-                      >
-                        {date}
-                      </Typography>
-                    </td>
-                    <td className={classes}>
                       <Tooltip content="Edit User">
                         <IconButton variant="text">
                           <PencilIcon className="h-4 w-4" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip content="Delete User">
+                        <IconButton variant="text">
+                          <TrashIcon className="h-4 w-4" />
                         </IconButton>
                       </Tooltip>
                     </td>
