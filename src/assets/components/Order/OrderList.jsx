@@ -1,25 +1,23 @@
 import {
-  MagnifyingGlassIcon,
   ChevronUpDownIcon,
+  MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
-import { PencilIcon, UserPlusIcon } from "@heroicons/react/24/solid";
+import { PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
 import {
-  Card,
-  CardHeader,
-  Input,
-  Typography,
+  Avatar,
   Button,
+  Card,
   CardBody,
-  Chip,
   CardFooter,
+  CardHeader,
+  IconButton,
+  Input,
+  Tab,
   Tabs,
   TabsHeader,
-  Tab,
-  Avatar,
-  IconButton,
   Tooltip,
+  Typography,
 } from "@material-tailwind/react";
-import { useNavigate } from "react-router-dom";
 
 const TABS = [
   {
@@ -36,86 +34,94 @@ const TABS = [
   },
 ];
 
-const TABLE_HEAD = ["Member", "Function", "Status", "Employed", ""];
+const TABLE_HEAD = [
+  "User",
+  "Product",
+  "Quantity",
+  "Unit Price",
+  "Total Amount",
+  "SKU",
+  "Action",
+];
 
 const TABLE_ROWS = [
   {
     img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-3.jpg",
     name: "John Michael",
     email: "john@creative-tim.com",
-    job: "Manager",
-    org: "Organization",
-    online: true,
-    date: "23/04/18",
+    product_name: "Vitamin C Serum",
+    category: "Fragrances",
+    quantity: 2,
+    unit_price: "100",
+    total_amount: "200",
+    sku: "SKU-123",
   },
   {
     img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-2.jpg",
     name: "Alexa Liras",
     email: "alexa@creative-tim.com",
-    job: "Programator",
-    org: "Developer",
-    online: false,
-    date: "23/04/18",
+    product_name: "Hydrating Facial Cleanser",
+    category: "Skincare",
+    quantity: 3,
+    unit_price: "100",
+    total_amount: "200",
+    sku: "SKU-123",
   },
   {
     img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-1.jpg",
     name: "Laurent Perrier",
     email: "laurent@creative-tim.com",
-    job: "Executive",
-    org: "Projects",
-    online: false,
-    date: "19/09/17",
+    product_name: "Anti-Aging Night Cream",
+    category: "Makeup",
+    quantity: 4,
+    unit_price: "150",
+    total_amount: "200",
+    sku: "SKU-123",
   },
   {
     img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-4.jpg",
     name: "Michael Levi",
     email: "michael@creative-tim.com",
-    job: "Programator",
-    org: "Developer",
-    online: true,
-    date: "24/12/08",
+    product_name: "Matte Liquid Foundation",
+    category: "Haircare",
+    quantity: 1,
+    unit_price: "240",
+    total_amount: "200",
+    sku: "SKU-123",
   },
   {
     img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-5.jpg",
     name: "Richard Gran",
     email: "richard@creative-tim.com",
-    job: "Manager",
-    org: "Executive",
-    online: false,
-    date: "04/10/21",
+    product_name: "Volumizing Mascara",
+    category: "Fragrances",
+    quantity: 4,
+    unit_price: "100",
+    total_amount: "200",
+    sku: "SKU-123",
   },
 ];
 export default function OrderList() {
-  const navigate = useNavigate();
-
-  const addUser = () => {
-    navigate("/user-create");
-  };
-
   return (
     <Card className="h-full w-full">
       <CardHeader floated={false} shadow={false} className="rounded-none">
         <div className="mb-8 flex items-center justify-between gap-8">
           <div>
             <Typography variant="h5" color="blue-gray">
-              Members list
+              Product Order list
             </Typography>
             <Typography color="gray" className="mt-1 font-normal">
-              See information about all members
+              See information about all orders
             </Typography>
           </div>
-          <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+          {/* <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
             <Button variant="outlined" size="sm">
               view all
             </Button>
-            <Button
-              onClick={addUser}
-              className="flex items-center gap-3"
-              size="sm"
-            >
+            <Button className="flex items-center gap-3" size="sm">
               <UserPlusIcon strokeWidth={2} className="h-4 w-4" /> Add User
             </Button>
-          </div>
+          </div> */}
         </div>
         <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
           <Tabs value="all" className="w-full md:w-max">
@@ -160,7 +166,20 @@ export default function OrderList() {
           </thead>
           <tbody>
             {TABLE_ROWS.map(
-              ({ img, name, email, job, org, online, date }, index) => {
+              (
+                {
+                  img,
+                  name,
+                  email,
+                  product_name,
+                  category,
+                  unit_price,
+                  quantity,
+                  total_amount,
+                  sku,
+                },
+                index
+              ) => {
                 const isLast = index === TABLE_ROWS.length - 1;
                 const classes = isLast
                   ? "p-4"
@@ -190,31 +209,24 @@ export default function OrderList() {
                       </div>
                     </td>
                     <td className={classes}>
-                      <div className="flex flex-col">
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-normal"
-                        >
-                          {job}
-                        </Typography>
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-normal opacity-70"
-                        >
-                          {org}
-                        </Typography>
-                      </div>
-                    </td>
-                    <td className={classes}>
-                      <div className="w-max">
-                        <Chip
-                          variant="ghost"
-                          size="sm"
-                          value={online ? "online" : "offline"}
-                          color={online ? "green" : "blue-gray"}
-                        />
+                      <div className="flex items-center gap-3">
+                        <Avatar src={img} alt={product_name} size="sm" />
+                        <div className="flex flex-col">
+                          <Typography
+                            variant="small"
+                            color="blue-gray"
+                            className="font-normal"
+                          >
+                            {product_name}
+                          </Typography>
+                          <Typography
+                            variant="small"
+                            color="blue-gray"
+                            className="font-normal opacity-70"
+                          >
+                            {category}
+                          </Typography>
+                        </div>
                       </div>
                     </td>
                     <td className={classes}>
@@ -223,13 +235,55 @@ export default function OrderList() {
                         color="blue-gray"
                         className="font-normal"
                       >
-                        {date}
+                        {quantity}
+                      </Typography>
+                    </td>
+                    {/* <td className={classes}>
+                      <div className="w-max">
+                        <Chip
+                          variant="ghost"
+                          size="sm"
+                          value={online ? "online" : "offline"}
+                          color={online ? "green" : "blue-gray"}
+                        />
+                      </div>
+                    </td> */}
+                    <td className={classes}>
+                      <Typography
+                        variant="small"
+                        color="blue-gray"
+                        className="font-normal"
+                      >
+                        {unit_price}
                       </Typography>
                     </td>
                     <td className={classes}>
-                      <Tooltip content="Edit User">
+                      <Typography
+                        variant="small"
+                        color="blue-gray"
+                        className="font-normal"
+                      >
+                        {total_amount}
+                      </Typography>
+                    </td>
+                    <td className={classes}>
+                      <Typography
+                        variant="small"
+                        color="blue-gray"
+                        className="font-normal"
+                      >
+                        {sku}
+                      </Typography>
+                    </td>
+                    <td className={classes}>
+                      <Tooltip content="Edit Order">
                         <IconButton variant="text">
                           <PencilIcon className="h-4 w-4" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip content="Delete Order">
+                        <IconButton variant="text">
+                          <TrashIcon className="h-4 w-4" />
                         </IconButton>
                       </Tooltip>
                     </td>
