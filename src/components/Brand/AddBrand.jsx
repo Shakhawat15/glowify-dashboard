@@ -1,7 +1,9 @@
+import { Dialog, DialogBody, DialogHeader } from "@material-tailwind/react";
 import { useRef } from "react";
 import { ErrorToast, IsEmpty } from "../../helper/FormHelper";
+import { ToastContainer } from "react-toastify";
 
-export default function AddBrand({ existingBrand, onCancel }) {
+export function AddBrand({ existingBrand, onCancel }) {
   const nameRef = useRef(null);
   const logoRef = useRef(null);
 
@@ -36,37 +38,46 @@ export default function AddBrand({ existingBrand, onCancel }) {
   };
 
   return (
-    <div className="animated fadeInDown w-full max-w-md p-6 bg-white border border-gray-200 rounded-lg shadow-md">
-      <h4 className="text-xl font-semibold mb-4">
-        {existingBrand ? "Update Brand" : "Add Brand"}
-      </h4>
-      <input
-        ref={nameRef}
-        defaultValue={existingBrand ? existingBrand.name : ""}
-        type="text"
-        placeholder="Brand Name"
-        className="w-full px-3 py-2 mb-4 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-      />
-      <input
-        ref={logoRef}
-        // defaultValue={existingBrand ? existingBrand.img : ""}
-        type="file"
-        className="w-full px-3 py-2 mb-4 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-      />
-      <div className="flex justify-between">
-        <button
-          onClick={handleSubmit}
-          className="py-2 px-4 text-white bg-indigo-600 hover:bg-indigo-700 rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-        >
-          {existingBrand ? "Update Brand" : "Add Brand"}
-        </button>
-        <button
-          onClick={handleCancel}
-          className="py-2 px-4 text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-        >
-          Cancel
-        </button>
-      </div>
-    </div>
+    <section className="grid place-items-center h-screen">
+      <Dialog className="p-4" size="md" open={open}>
+        <ToastContainer />
+        <DialogHeader className="justify-between">
+          <h4 className="text-xl font-semibold mb-4">
+            {existingBrand ? "Update Brand" : "Add Brand"}
+          </h4>
+        </DialogHeader>
+        <DialogBody className="overflow-auto">
+          <input
+            ref={nameRef}
+            defaultValue={existingBrand ? existingBrand.name : ""}
+            type="text"
+            placeholder="Brand Name"
+            className="w-full px-3 py-2 mb-4 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+          />
+          <input
+            ref={logoRef}
+            // defaultValue={existingBrand ? existingBrand.img : ""}
+            type="file"
+            className="w-full px-3 py-2 mb-4 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+          />
+          <div className="flex justify-between">
+            <button
+              onClick={handleSubmit}
+              className="py-2 px-4 text-white bg-indigo-600 hover:bg-indigo-700 rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              {existingBrand ? "Update Brand" : "Add Brand"}
+            </button>
+            <button
+              onClick={handleCancel}
+              className="py-2 px-4 text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+            >
+              Cancel
+            </button>
+          </div>
+        </DialogBody>
+      </Dialog>
+    </section>
   );
 }
+
+export default AddBrand;
