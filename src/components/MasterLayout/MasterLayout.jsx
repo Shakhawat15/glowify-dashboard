@@ -59,7 +59,7 @@ export default function MasterLayout({ children }) {
     <div className="flex flex-col h-screen relative">
       <Header />
       <div className="flex flex-grow overflow-hidden">
-        <div className="h-full w-80 p-4 shadow-xl shadow-blue-gray-900/5">
+        <div className="h-full w-60 p-4 shadow-xl shadow-blue-gray-900/5">
           <List>
             <NavLink
               className={({ isActive }) =>
@@ -78,146 +78,42 @@ export default function MasterLayout({ children }) {
                 Dashboard
               </Typography>
             </NavLink>
-
-            <Accordion
-              open={open === 1}
-              icon={
-                <ChevronDownIcon
-                  strokeWidth={2.5}
-                  className={`mx-auto h-4 w-4 transition-transform ${
-                    open === 1 ? "rotate-180" : ""
-                  }`}
-                />
+            <NavLink
+              className={({ isActive }) =>
+                `flex items-center p-2 rounded-md mt-2 transition-colors ${
+                  isActive
+                    ? "bg-blue-gray-100 text-blue-500"
+                    : "hover:bg-blue-gray-50"
+                }`
               }
+              to="/users"
             >
-              <ListItem className="p-0" selected={open === 1}>
-                <AccordionHeader
-                  onClick={() => handleOpen(1)}
-                  className="border-b-0 p-3"
-                >
-                  <ListItemPrefix>
-                    <UsersIcon className="h-5 w-5" />
-                  </ListItemPrefix>
-                  <Typography color="blue-gray" className="mr-auto font-normal">
-                    Users
-                  </Typography>
-                </AccordionHeader>
-              </ListItem>
-              <AccordionBody className="py-1">
-                <List className="p-0">
-                  <NavLink
-                    className={({ isActive }) =>
-                      `flex items-center p-2 rounded-md mt-2 transition-colors ${
-                        isActive
-                          ? "bg-blue-gray-100 text-blue-500"
-                          : "hover:bg-blue-gray-50"
-                      }`
-                    }
-                    to="/users"
-                  >
-                    <ListItemPrefix>
-                      <ChevronRightIcon
-                        strokeWidth={3}
-                        className="h-3 w-5 mr-3"
-                      />
-                    </ListItemPrefix>
-                    <Typography color="blue-gray" className="font-normal">
-                      User List
-                    </Typography>
-                  </NavLink>
-                  <NavLink
-                    className={({ isActive }) =>
-                      `flex items-center p-2 rounded-md mt-2 transition-colors ${
-                        isActive
-                          ? "bg-blue-gray-100 text-blue-500"
-                          : "hover:bg-blue-gray-50"
-                      }`
-                    }
-                    to="/user-create"
-                  >
-                    <ListItemPrefix>
-                      <ChevronRightIcon
-                        strokeWidth={3}
-                        className="h-3 w-5 mr-3"
-                      />
-                    </ListItemPrefix>
-                    <Typography color="blue-gray" className="font-normal">
-                      Add User
-                    </Typography>
-                  </NavLink>
-                </List>
-              </AccordionBody>
-            </Accordion>
+              <ListItemPrefix>
+                <UsersIcon className="h-5 w-5" />
+              </ListItemPrefix>
+              <Typography color="blue-gray" className="mr-auto font-normal">
+                Users
+              </Typography>
+            </NavLink>
 
-            <Accordion
-              open={open === 2}
-              icon={
-                <ChevronDownIcon
-                  strokeWidth={2.5}
-                  className={`mx-auto h-4 w-4 transition-transform ${
-                    open === 2 ? "rotate-180" : ""
-                  }`}
-                />
+            <NavLink
+              className={({ isActive }) =>
+                `flex items-center p-2 rounded-md mt-2 transition-colors ${
+                  isActive
+                    ? "bg-blue-gray-100 text-blue-500"
+                    : "hover:bg-blue-gray-50"
+                }`
               }
+              to="/user-roles"
             >
-              <ListItem className="p-0" selected={open === 2}>
-                <AccordionHeader
-                  onClick={() => handleOpen(2)}
-                  className="border-b-0 p-3"
-                >
-                  <ListItemPrefix>
-                    <BriefcaseIcon className="h-5 w-5" />
-                  </ListItemPrefix>
-                  <Typography color="blue-gray" className="mr-auto font-normal">
-                    User Roles
-                  </Typography>
-                </AccordionHeader>
-              </ListItem>
-              <AccordionBody className="py-1">
-                <List className="p-0">
-                  <NavLink
-                    className={({ isActive }) =>
-                      `flex items-center p-2 rounded-md mt-2 transition-colors ${
-                        isActive
-                          ? "bg-blue-gray-100 text-blue-500"
-                          : "hover:bg-blue-gray-50"
-                      }`
-                    }
-                    to="/user-roles"
-                  >
-                    <ListItemPrefix>
-                      <ChevronRightIcon
-                        strokeWidth={3}
-                        className="h-3 w-5 mr-3"
-                      />
-                    </ListItemPrefix>
-                    <Typography color="blue-gray" className="font-normal">
-                      User Role List
-                    </Typography>
-                  </NavLink>
-                  <NavLink
-                    className={({ isActive }) =>
-                      `flex items-center p-2 rounded-md mt-2 transition-colors ${
-                        isActive
-                          ? "bg-blue-gray-100 text-blue-500"
-                          : "hover:bg-blue-gray-50"
-                      }`
-                    }
-                    to="/user-role-create"
-                  >
-                    <ListItemPrefix>
-                      <ChevronRightIcon
-                        strokeWidth={3}
-                        className="h-3 w-5 mr-3"
-                      />
-                    </ListItemPrefix>
-                    <Typography color="blue-gray" className="font-normal">
-                      Add User Role
-                    </Typography>
-                  </NavLink>
-                </List>
-              </AccordionBody>
-            </Accordion>
+              <ListItemPrefix>
+                <BriefcaseIcon className="h-5 w-5" />
+              </ListItemPrefix>
+              <Typography color="blue-gray" className="mr-auto font-normal">
+                User Roles
+              </Typography>
+            </NavLink>
+
             <NavLink
               className={({ isActive }) =>
                 `flex items-center p-2 rounded-md mt-2 transition-colors ${
@@ -321,57 +217,23 @@ export default function MasterLayout({ children }) {
                 </List>
               </AccordionBody>
             </Accordion>
-
-            <Accordion
-              open={open === 6}
-              icon={
-                <ChevronDownIcon
-                  strokeWidth={2.5}
-                  className={`mx-auto h-4 w-4 transition-transform ${
-                    open === 6 ? "rotate-180" : ""
-                  }`}
-                />
+            <NavLink
+              className={({ isActive }) =>
+                `flex items-center p-2 rounded-md mt-2 transition-colors ${
+                  isActive
+                    ? "bg-blue-gray-100 text-blue-500"
+                    : "hover:bg-blue-gray-50"
+                }`
               }
+              to="/orders"
             >
-              <ListItem className="p-0" selected={open === 6}>
-                <AccordionHeader
-                  onClick={() => handleOpen(6)}
-                  className="border-b-0 p-3"
-                >
-                  <ListItemPrefix>
-                    <InboxIcon className="h-5 w-5" />
-                  </ListItemPrefix>
-                  <Typography color="blue-gray" className="mr-auto font-normal">
-                    Orders
-                  </Typography>
-                </AccordionHeader>
-              </ListItem>
-              <AccordionBody className="py-1">
-                <List className="p-0">
-                  <NavLink
-                    className={({ isActive }) =>
-                      `flex items-center p-2 rounded-md mt-2 transition-colors ${
-                        isActive
-                          ? "bg-blue-gray-100 text-blue-500"
-                          : "hover:bg-blue-gray-50"
-                      }`
-                    }
-                    to="/orders"
-                  >
-                    <ListItemPrefix>
-                      <ChevronRightIcon
-                        strokeWidth={3}
-                        className="h-3 w-5 mr-3"
-                      />
-                    </ListItemPrefix>
-                    <Typography color="blue-gray" className="font-normal">
-                      Order List
-                    </Typography>
-                  </NavLink>
-                </List>
-              </AccordionBody>
-            </Accordion>
-
+              <ListItemPrefix>
+                <InboxIcon className="h-5 w-5" />
+              </ListItemPrefix>
+              <Typography color="blue-gray" className="mr-auto font-normal">
+                Orders
+              </Typography>
+            </NavLink>
             <Accordion
               open={open === 7}
               icon={
