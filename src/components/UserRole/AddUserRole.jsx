@@ -1,41 +1,89 @@
 import {
-  Button,
-  Card,
-  CardBody,
-  CardFooter,
-  Input,
+  Dialog,
+  DialogBody,
+  DialogHeader,
   Switch,
-  Typography,
 } from "@material-tailwind/react";
+import { useRef, useState } from "react";
+import { ToastContainer } from "react-toastify";
+import { ErrorToast, IsEmpty } from "../../helper/FormHelper";
 
-export default function AddUserRole() {
+export default function AddUserRole({ existingUserRole, onCancel }) {
+  const nameRef = useRef(null);
+  const [status, setStatus] = useState(
+    existingUserRole ? existingUserRole.online === true : false
+  );
+
+  console.log("existingUserRole", existingUserRole);
+
+  const handleSubmit = async () => {
+    const name = nameRef.current.value;
+    const statusValue = status ? true : false;
+
+    if (IsEmpty(name)) {
+      ErrorToast("Role name is required!");
+    } else {
+      const formData = new FormData();
+      formData.append("name", name);
+      formData.append("status", statusValue);
+      // Handle form submission, e.g., send to backend
+
+      // Close the modal after successful submission if needed
+      onCancel();
+    }
+  };
+
+  const handleCancel = () => {
+    // Reset form fields
+    nameRef.current.value = "";
+    setStatus(false);
+
+    // Call onCancel to close the modal
+    onCancel();
+  };
+
   return (
-    <Card className="h-full w-full">
-      <CardBody>
-        <div className="mb-8">
-          <Typography variant="h5" color="blue-gray">
-            Add User Role
-          </Typography>
-          <Typography color="gray" className="mt-1 font-normal">
-            Fill in the details to add a new user role
-          </Typography>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Input label="Role Name" />
-          <div className="flex items-center">
-            <Typography className="mr-4">Active:</Typography>
-            <Switch color="blue" checked={true} />
+    <section className="grid place-items-center h-screen">
+      <Dialog className="p-4" size="md" open={open}>
+        <ToastContainer />
+        <DialogHeader className="justify-between">
+          <h4 className="text-xl font-semibold mb-4">
+            {existingUserRole ? "Update User Role" : "Add User Role"}
+          </h4>
+        </DialogHeader>
+        <DialogBody className="overflow-auto">
+          <input
+            ref={nameRef}
+            defaultValue={existingUserRole ? existingUserRole.name : ""}
+            type="text"
+            placeholder="User Role Name"
+            className="w-full px-3 py-2 mb-4 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+          />
+          <div className="flex items-center mb-4">
+            <Switch
+              id="status"
+              checked={status}
+              onChange={() => setStatus(!status)}
+              color="indigo"
+              label="Active"
+            />
           </div>
-        </div>
-      </CardBody>
-      <CardFooter className="flex items-center justify-end border-t border-blue-gray-50 p-4">
-        <Button variant="outlined" size="sm">
-          Cancel
-        </Button>
-        <Button color="lightBlue" size="sm">
-          Add User Role
-        </Button>
-      </CardFooter>
-    </Card>
+          <div className="flex justify-between">
+            <button
+              onClick={handleSubmit}
+              className="py-2 px-4 text-white bg-indigo-600 hover:bg-indigo-700 rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              {existingUserRole ? "Update User Role" : "Add User Role"}
+            </button>
+            <button
+              onClick={handleCancel}
+              className="py-2 px-4 text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+            >
+              Cancel
+            </button>
+          </div>
+        </DialogBody>
+      </Dialog>
+    </section>
   );
 }
