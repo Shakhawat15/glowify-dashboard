@@ -8,7 +8,6 @@ import {
 import { useRef, useState } from "react";
 import JoditEditor from "jodit-react";
 import { ErrorToast, IsEmpty } from "../../helper/FormHelper";
-import Dropzone, { useDropzone } from "react-dropzone";
 
 export default function AddProduct() {
   const editor = useRef(null);
@@ -21,7 +20,6 @@ export default function AddProduct() {
   const [sku, setSku] = useState("");
   const [discountType, setDiscountType] = useState("fixed");
   const [discountPrice, setDiscountPrice] = useState("");
-  const [images, setImages] = useState([]);
 
   const addAttribute = () => {
     const newAttribute = {
@@ -49,12 +47,6 @@ export default function AddProduct() {
     updatedAttributes.splice(index, 1);
     setAttributes(updatedAttributes);
   };
-
-  const onDrop = (acceptedFiles) => {
-    setImages([...images, ...acceptedFiles]);
-  };
-
-  const { getRootProps, getInputProps } = useDropzone({ onDrop });
 
   const handleSubmit = () => {
     if (IsEmpty(category)) {
@@ -87,7 +79,6 @@ export default function AddProduct() {
         discountType,
         discountPrice,
         attributes,
-        images,
       };
       console.log(formData);
     }
@@ -231,48 +222,6 @@ export default function AddProduct() {
               className="w-full px-3 py-2 mb-4 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
             />
           </div>
-
-          <div className="col-span-2 mb-4 border border-gray-300 rounded-md p-4">
-            <div className="flex justify-between items-center mb-2">
-              <Typography className="text-gray-700 font-medium">
-                Upload Images
-              </Typography>
-              {/* Dropzone for image uploads */}
-              <Dropzone onDrop={onDrop}>
-                {({ getRootProps, getInputProps }) => (
-                  <div {...getRootProps({ className: "dropzone" })}>
-                    <input {...getInputProps()} />
-                    <Button color="light-blue" size="sm" className="ml-2">
-                      {`Drag'n drop some files here, or click to select files`}
-                    </Button>
-                  </div>
-                )}
-              </Dropzone>
-            </div>
-            {/* Display uploaded images */}
-            <div className="mt-4 grid grid-cols-3 gap-4">
-              {images.map((file, index) => (
-                <div key={index} className="relative">
-                  <img
-                    src={URL.createObjectURL(file)}
-                    alt={file.name}
-                    className="w-full h-auto rounded-md"
-                  />
-                  <div className="absolute top-1 right-1">
-                    <Button
-                      color="red"
-                      size="sm"
-                      onClick={() =>
-                        setImages(images.filter((_, i) => i !== index))
-                      }
-                    >
-                      Remove
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
           {attributes.map((attribute, index) => (
             <div
               key={index}
@@ -334,7 +283,7 @@ export default function AddProduct() {
         </div>
       </CardBody>
       <CardFooter className="flex items-center justify-between border-t border-blue-gray-50 p-4">
-        <Button color="light-blue" size="sm" onClick={addAttribute}>
+        <Button color="lightBlue" size="sm" onClick={addAttribute}>
           + Add Attribute
         </Button>
         <div>
@@ -342,7 +291,7 @@ export default function AddProduct() {
             Cancel
           </Button>
           <Button
-            color="light-blue"
+            color="lightBlue"
             size="sm"
             className="ml-2"
             onClick={handleSubmit}
