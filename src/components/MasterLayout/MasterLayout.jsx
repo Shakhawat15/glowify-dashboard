@@ -268,7 +268,7 @@ export default function MasterLayout({ children }) {
                           : "hover:bg-blue-gray-50"
                       }`
                     }
-                    to="/settings/header"
+                    to="/header-setting"
                   >
                     <ListItemPrefix>
                       <ChevronRightIcon
@@ -288,7 +288,7 @@ export default function MasterLayout({ children }) {
                           : "hover:bg-blue-gray-50"
                       }`
                     }
-                    to="/settings/footer"
+                    to="/footer-setting"
                   >
                     <ListItemPrefix>
                       <ChevronRightIcon
@@ -338,7 +338,7 @@ export default function MasterLayout({ children }) {
                           : "hover:bg-blue-gray-50"
                       }`
                     }
-                    to="/menu/create"
+                    to="/create-menu"
                   >
                     <ListItemPrefix>
                       <ChevronRightIcon
