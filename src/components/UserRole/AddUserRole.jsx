@@ -45,10 +45,12 @@ export default function AddUserRole({ existingUserRole, onCancel }) {
           const URL = `${baseURL}/user-roles/create`;
           response = await axios.post(URL, formData, AxiosHeader);
         }
-
         if (response.status === 200 || response.status === 201) {
           SuccessToast(response.data.message);
-          onCancel(); // Close the modal after successful submission
+          // onCancel(); // Close the modal after successful submission
+          setTimeout(() => {
+            onCancel(); // Close the modal after showing the toast
+          }, 1000); 
         }
       } catch (error) {
         ErrorToast(error.response?.data?.message || "An error occurred");
