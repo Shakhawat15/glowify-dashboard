@@ -15,44 +15,49 @@ import {
   Input,
   Tooltip,
   Typography,
+  Select,
+  Option,
 } from "@material-tailwind/react";
-import { lazy, Suspense, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import LazyLoader from "../MasterLayout/LazyLoader";
+import { getToken } from "../../helper/SessionHelper";
+import { ErrorToast } from "../../helper/FormHelper";
+import axios from "axios";
+import Loader from "../MasterLayout/Loader";
 
 const AddUserRole = lazy(() => import("./AddUserRole"));
 
 const TABLE_HEAD = ["Role Name", "Status", "Create Date", "Action"];
 
-const TABLE_ROWS = [
-  {
-    name: "Admin",
-    online: true,
-    date: "23/04/18",
-  },
-  {
-    name: "Manager",
-    online: false,
-    date: "23/04/18",
-  },
-  {
-    name: "Customer",
-    online: false,
-    date: "19/09/17",
-  },
-  {
-    name: "Developer",
-    online: true,
-    date: "24/12/08",
-  },
-  {
-    name: "Designer",
-    online: false,
-    date: "04/10/21",
-  },
-];
+const baseURL = "http://localhost:8000/api/v1";
+const AxiosHeader = { headers: { Authorization: getToken() } };
+
 export default function UserRoleList() {
   const [openModal, setOpenModal] = useState(false);
   const [selectedUserRole, setSelectedUserRole] = useState(null);
+  const [userRoles, setUserRoles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+
+  useEffect(() => {
+    
+    fetchUserRoles();
+  }, []);
+
+  const fetchUserRoles = async () => {
+    setLoading(true);
+
+    try {
+      const response = await axios.get(`${baseURL}/user-roles/all`, AxiosHeader);
+      setUserRoles(response.data.data);
+    } catch (error) {
+      ErrorToast(error.response?.data?.message || "An error occurred");
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   const handleOpenModal = (userRole = null) => {
     setSelectedUserRole(userRole);
@@ -62,10 +67,12 @@ export default function UserRoleList() {
   const handleCloseModal = () => {
     setOpenModal(false);
     setSelectedUserRole(null);
+    fetchUserRoles();
   };
 
   const handleEditUserRole = (userRole) => {
     handleOpenModal(userRole);
+
   };
 
   const handleDeleteUserRole = (userRole) => {
@@ -73,28 +80,40 @@ export default function UserRoleList() {
     // Implement the delete functionality
   };
 
+  const totalPages = Math.ceil(userRoles.length / itemsPerPage);
+  const handlePageChange = (direction) => {
+    if (direction === "next" && currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    } else if (direction === "prev" && currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const currentTableData = userRoles.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   return (
     <>
       <Card className="h-full w-full">
         <CardHeader floated={false} shadow={false} className="rounded-none">
-          <div className="mb-8 flex items-center justify-between gap-8">
+          <div className="mb-8 flex flex-col lg:flex-row items-center justify-between gap-8">
             <div>
               <Typography variant="h5" color="blue-gray">
-                User Role list
+                User Role List
               </Typography>
               <Typography color="gray" className="mt-1 font-normal">
                 See information about all roles
               </Typography>
             </div>
-          </div>
-          <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
-            <div className="w-full md:w-72">
-              <Input
-                label="Search"
-                icon={<MagnifyingGlassIcon className="h-5 w-5" />}
-              />
-            </div>
-            <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+            <div className="flex flex-col lg:flex-row items-center gap-4">
+              <div className="w-full lg:w-72">
+                <Input
+                  label="Search"
+                  icon={<MagnifyingGlassIcon className="h-5 w-5" />}
+                />
+              </div>
               <Button
                 onClick={() => handleOpenModal()}
                 className="flex items-center gap-3"
@@ -105,108 +124,132 @@ export default function UserRoleList() {
             </div>
           </div>
         </CardHeader>
-        <CardBody className="overflow-scroll px-0">
-          <table className="mt-4 w-full min-w-max table-auto text-left">
-            <thead>
-              <tr>
-                {TABLE_HEAD.map((head, index) => (
-                  <th
-                    key={head}
-                    className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50"
-                  >
-                    <Typography
-                      variant="small"
-                      color="blue-gray"
-                      className="flex items-center justify-between gap-2 font-normal leading-none opacity-70"
+        <CardBody className="overflow-auto px-0 pt-0" style={{ maxHeight: "500px" }}>
+          {loading ? (
+            <Loader />
+          ) : (
+            <table className="mt-4 w-full min-w-max table-auto text-left">
+              <thead className="sticky top-0 z-10 bg-white shadow-md">
+                <tr>
+                  {TABLE_HEAD.map((head, index) => (
+                    <th
+                      key={head}
+                      className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50"
                     >
-                      {head}{" "}
-                      {index !== TABLE_HEAD.length - 1 && (
-                        <ChevronUpDownIcon
-                          strokeWidth={2}
-                          className="h-4 w-4"
-                        />
-                      )}
-                    </Typography>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {TABLE_ROWS.map(({ name, online, date }, index) => {
-                const isLast = index === TABLE_ROWS.length - 1;
-                const classes = isLast
-                  ? "p-4"
-                  : "p-4 border-b border-blue-gray-50";
-
-                return (
-                  <tr key={name}>
-                    <td className={classes}>
-                      <div className="flex items-center gap-3">
-                        <div className="flex flex-col">
-                          <Typography
-                            variant="small"
-                            color="blue-gray"
-                            className="font-normal"
-                          >
-                            {name}
-                          </Typography>
-                        </div>
-                      </div>
-                    </td>
-                    <td className={classes}>
-                      <div className="w-max">
-                        <Chip
-                          variant="ghost"
-                          size="sm"
-                          value={online ? "online" : "offline"}
-                          color={online ? "green" : "blue-gray"}
-                        />
-                      </div>
-                    </td>
-                    <td className={classes}>
                       <Typography
                         variant="small"
                         color="blue-gray"
-                        className="font-normal"
+                        className="flex items-center justify-between gap-2 font-normal leading-none opacity-70"
                       >
-                        {date}
+                        {head}{" "}
+                        {index !== TABLE_HEAD.length - 1 && (
+                          <ChevronUpDownIcon
+                            strokeWidth={2}
+                            className="h-4 w-4"
+                          />
+                        )}
                       </Typography>
-                    </td>
-                    <td className={classes}>
-                      <Tooltip content="Edit User Role">
-                        <IconButton
-                          onClick={() => handleEditUserRole({ name, online })}
-                          variant="text"
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {currentTableData.map(({ role_name, is_active, createdAt, _id }, index) => {
+                  const isLast = index === currentTableData.length - 1;
+                  const classes = isLast
+                    ? "p-4"
+                    : "p-4 border-b border-blue-gray-50";
+
+                  return (
+                    <tr key={_id}>
+                      <td className={classes}>
+                        <div className="flex items-center gap-3">
+                          <div className="flex flex-col">
+                            <Typography
+                              variant="small"
+                              color="blue-gray"
+                              className="font-normal"
+                            >
+                              {role_name}
+                            </Typography>
+                          </div>
+                        </div>
+                      </td>
+                      <td className={classes}>
+                        <div className="w-max">
+                          <Chip
+                            variant="ghost"
+                            size="sm"
+                            value={is_active ? "Active" : "Inactive"}
+                            color={is_active ? "green" : "blue-gray"}
+                          />
+                        </div>
+                      </td>
+                      <td className={classes}>
+                        <Typography
+                          variant="small"
+                          color="blue-gray"
+                          className="font-normal"
                         >
-                          <PencilIcon className="h-4 w-4" />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip content="Delete User Role">
-                        <IconButton
-                          onClick={() => handleDeleteUserRole({ name, online })}
-                          variant="text"
-                        >
-                          <TrashIcon className="h-4 w-4" />
-                        </IconButton>
-                      </Tooltip>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                          {new Date(createdAt).toLocaleDateString()}
+                        </Typography>
+                      </td>
+                      <td className={classes}>
+                        <Tooltip content="Edit User Role">
+                          <IconButton
+                            onClick={() => handleEditUserRole({ _id, role_name, is_active })}
+                            variant="text"
+                          >
+                            <PencilIcon className="h-4 w-4" />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip content="Delete User Role">
+                          <IconButton
+                            onClick={() => handleDeleteUserRole({ _id })}
+                            variant="text"
+                          >
+                            <TrashIcon className="h-4 w-4" />
+                          </IconButton>
+                        </Tooltip>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
         </CardBody>
         <CardFooter className="flex items-center justify-between border-t border-blue-gray-50 p-4">
           <Typography variant="small" color="blue-gray" className="font-normal">
-            Page 1 of 10
+            Page {currentPage} of {totalPages}
           </Typography>
-          <div className="flex gap-2">
-            <Button variant="outlined" size="sm">
+          <div className="flex gap-2 items-center">
+            <Button
+              variant="outlined"
+              size="sm"
+              onClick={() => handlePageChange("prev")}
+              disabled={currentPage === 1}
+            >
               Previous
             </Button>
-            <Button variant="outlined" size="sm">
+            <Button
+              variant="outlined"
+              size="sm"
+              onClick={() => handlePageChange("next")}
+              disabled={currentPage === totalPages}
+            >
               Next
             </Button>
+            {/* <Select
+              label="Items per page"
+              value={itemsPerPage.toString()}
+              onChange={(e) => setItemsPerPage(parseInt(e.target.value))}
+              className="w-24"
+            >
+              <Option value="5">5</Option>
+              <Option value="10">10</Option>
+              <Option value="15">15</Option>
+            </Select> */}
           </div>
         </CardFooter>
       </Card>
