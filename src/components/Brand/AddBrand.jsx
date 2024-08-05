@@ -1,14 +1,15 @@
 import { Dialog, DialogBody, DialogHeader, Spinner } from "@material-tailwind/react";
 import axios from "axios";
 import { useFormik } from "formik";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ToastContainer } from "react-toastify";
 import * as Yup from "yup";
-import { AxiosHeader, baseURL } from "../../API/config";
+import { AxiosHeader, baseURL, imageBaseURL } from "../../API/config";
 import { ErrorToast, SuccessToast } from "../../helper/FormHelper";
 
 export function AddBrand({ existingBrand, onCancel }) {
   const [loading, setLoading] = useState(false);
+  const [logoPreview, setLogoPreview] = useState(null);
 
   const formik = useFormik({
     initialValues: {
@@ -42,7 +43,7 @@ export function AddBrand({ existingBrand, onCancel }) {
           SuccessToast(existingBrand ? "Brand updated successfully" : "Brand created successfully");
           setTimeout(() => {
             onCancel(); // Close the modal after showing the toast
-          }, 1000); 
+          }, 1000);
         } else {
           throw new Error("Failed to save brand");
         }
@@ -53,6 +54,29 @@ export function AddBrand({ existingBrand, onCancel }) {
       }
     },
   });
+
+  useEffect(() => {
+    if (existingBrand && existingBrand.logo_path) {
+      setLogoPreview(existingBrand.logo_path);
+    }
+  }, [existingBrand]);
+
+  const handleLogoChange = (event) => {
+    const file = event.currentTarget.files[0];
+    formik.setFieldValue("logo", file);
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setLogoPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveLogo = () => {
+    formik.setFieldValue("logo", null);
+    setLogoPreview(null);
+  };
 
   return (
     <section className="grid place-items-center h-screen">
@@ -89,26 +113,47 @@ export function AddBrand({ existingBrand, onCancel }) {
               </div>
             </div>
             <div className="mb-4">
-              <input
-                type="file"
-                name="logo"
-                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
-                  formik.touched.logo && formik.errors.logo
-                    ? "border-red-500"
-                    : "border-gray-300"
-                }`}
-                onChange={(event) => {
-                  formik.setFieldValue("logo", event.currentTarget.files[0]);
-                }}
-              />
-              <div
-                className="text-red-500 mt-1"
-                style={{ minHeight: "1.25rem" }}
-              >
-                {formik.touched.logo && formik.errors.logo ? (
-                  <span>{formik.errors.logo}</span>
-                ) : null}
+              {logoPreview ? (
+                <div className="flex flex-col items-center">
+                <img
+                  src={
+                    existingBrand
+                      ? `${imageBaseURL}/${existingBrand.logo_path}`
+                      : logoPreview
+                  }
+                  alt="Logo Preview"
+                  className="w-32 h-32 mb-2 object-contain"
+                />
+                <button
+                  type="button"
+                  onClick={handleRemoveLogo}
+                  className="text-red-500 hover:text-red-700"
+                >
+                  Remove Logo
+                </button>
               </div>
+              ) : (
+                <>
+                  <input
+                    type="file"
+                    name="logo"
+                    className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
+                      formik.touched.logo && formik.errors.logo
+                        ? "border-red-500"
+                        : "border-gray-300"
+                    }`}
+                    onChange={handleLogoChange}
+                  />
+                  <div
+                    className="text-red-500 mt-1"
+                    style={{ minHeight: "1.25rem" }}
+                  >
+                    {formik.touched.logo && formik.errors.logo ? (
+                      <span>{formik.errors.logo}</span>
+                    ) : null}
+                  </div>
+                </>
+              )}
             </div>
             <div className="flex justify-between">
               <button
