@@ -14,23 +14,17 @@ import {
   IconButton,
   Input,
   Tooltip,
-  Typography,
-  Select,
-  Option,
+  Typography
 } from "@material-tailwind/react";
-import { lazy, Suspense, useEffect, useState } from "react";
-import LazyLoader from "../MasterLayout/LazyLoader";
-import { getToken } from "../../helper/SessionHelper";
-import { ErrorToast } from "../../helper/FormHelper";
 import axios from "axios";
+import { Suspense, useEffect, useState } from "react";
+import { AxiosHeader, baseURL } from "../../API/config";
+import { ErrorToast } from "../../helper/FormHelper";
+import LazyLoader from "../MasterLayout/LazyLoader";
 import Loader from "../MasterLayout/Loader";
-
-const AddUserRole = lazy(() => import("./AddUserRole"));
 
 const TABLE_HEAD = ["Role Name", "Status", "Create Date", "Action"];
 
-const baseURL = "http://localhost:8000/api/v1";
-const AxiosHeader = { headers: { Authorization: getToken() } };
 
 export default function UserRoleList() {
   const [openModal, setOpenModal] = useState(false);

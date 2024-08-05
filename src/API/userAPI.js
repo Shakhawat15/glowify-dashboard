@@ -1,8 +1,7 @@
 import axios from "axios";
 import { ErrorToast, SuccessToast } from "../helper/FormHelper";
 import { setToken, setUser } from "../helper/SessionHelper";
-
-const baseURL = "http://localhost:8000/api/v1";
+import { baseURL } from "./config";
 
 export const LoginRequest = async (email, password, setLoading) => {
   const URL = `${baseURL}/users/login`;

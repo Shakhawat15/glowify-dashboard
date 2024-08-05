@@ -4,15 +4,13 @@ import {
   DialogHeader,
   Switch,
 } from "@material-tailwind/react";
+import axios from "axios";
 import { useRef, useState } from "react";
 import { ToastContainer } from "react-toastify";
+import { AxiosHeader, baseURL } from "../../API/config";
 import { ErrorToast, IsEmpty, SuccessToast } from "../../helper/FormHelper";
-import { getToken } from "../../helper/SessionHelper";
 import Loader from "../MasterLayout/Loader";
-import axios from "axios";
 
-const AxiosHeader = { headers: { Authorization: getToken() } };
-const baseURL = "http://localhost:8000/api/v1";
 
 export default function AddUserRole({ existingUserRole, onCancel }) {
   const nameRef = useRef(null);
