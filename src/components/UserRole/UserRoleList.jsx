@@ -22,6 +22,7 @@ import { AxiosHeader, baseURL } from "../../API/config";
 import { ErrorToast } from "../../helper/FormHelper";
 import LazyLoader from "../MasterLayout/LazyLoader";
 import Loader from "../MasterLayout/Loader";
+import AddUserRole from "./AddUserRole";
 
 const TABLE_HEAD = ["Role Name", "Status", "Create Date", "Action"];
 

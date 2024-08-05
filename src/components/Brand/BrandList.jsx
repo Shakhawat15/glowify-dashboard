@@ -1,8 +1,9 @@
 import {
   ChevronUpDownIcon,
   MagnifyingGlassIcon,
+  PlusIcon,
 } from "@heroicons/react/24/outline";
-import { PencilIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
+import { PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
 import {
   Avatar,
   Button,
@@ -16,86 +17,106 @@ import {
   Tooltip,
   Typography,
 } from "@material-tailwind/react";
-import { useState } from "react";
-import Modal from "react-modal";
+import axios from "axios";
+import { Suspense, useEffect, useState } from "react";
+import { AxiosHeader, baseURL, imageBaseURL } from "../../API/config";
+import { ErrorToast, SuccessToast } from "../../helper/FormHelper";
+import LazyLoader from "../MasterLayout/LazyLoader";
+import Loader from "../MasterLayout/Loader";
 import AddBrand from "./AddBrand";
 
 const TABLE_HEAD = ["Brand Name", "Logo", "Create Date", "Status", "Action"];
 
-const TABLE_ROWS = [
-  {
-    img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-3.jpg",
-    name: "Glossier",
-    online: true,
-    date: "23/04/18",
-  },
-  {
-    img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-2.jpg",
-    name: "NARS",
-    online: false,
-    date: "23/04/18",
-  },
-  {
-    img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-1.jpg",
-    name: "Lancome",
-    online: false,
-    date: "19/09/17",
-  },
-  {
-    img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-4.jpg",
-    name: "Maybelline",
-    online: true,
-    date: "24/12/08",
-  },
-  {
-    img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-5.jpg",
-    name: "Clinique",
-    online: false,
-    date: "04/10/21",
-  },
-];
-
-Modal.setAppElement("#root");
-
 export default function BrandList() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentBrand, setCurrentBrand] = useState(null);
+  const [openModal, setOpenModal] = useState(false);
+  const [selectedBrand, setSelectedBrand] = useState(null);
+  const [brands, setBrands] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  const openModal = (brand) => {
-    setCurrentBrand(brand);
-    setIsModalOpen(true);
+  useEffect(() => {
+    fetchBrands();
+  }, []);
+
+  const fetchBrands = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(`${baseURL}/brands/all`, AxiosHeader);
+      setBrands(response.data.data);
+    } catch (error) {
+      ErrorToast("Failed to fetch brands");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const closeModal = () => {
-    setCurrentBrand(null);
-    setIsModalOpen(false);
-    console.log("Modal closed");
+  const handleOpenModal = (brand = null) => {
+    setSelectedBrand(brand);
+    setOpenModal(true);
   };
+
+  const handleCloseModal = () => {
+    setOpenModal(false);
+    setSelectedBrand(null);
+    fetchBrands();
+  };
+
+  const handleEditBrand = (brand) => {
+    handleOpenModal(brand);
+  };
+
+  const handleDeleteBrand = async (brand) => {
+    setLoading(true);
+    try {
+      const response = await axios.delete(`${baseURL}/brands/delete/${brand._id}`, AxiosHeader);
+      if (response.status === 200) {
+        SuccessToast("Brand deleted successfully");
+        setBrands(brands.filter((b) => b._id !== brand._id));
+      }
+    } catch (error) {
+      ErrorToast("Failed to delete brand");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const totalPages = Math.ceil(brands.length / itemsPerPage);
+  const handlePageChange = (direction) => {
+    if (direction === "next" && currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    } else if (direction === "prev" && currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const currentTableData = brands.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   return (
     <>
       <Card className="h-full w-full">
         <CardHeader floated={false} shadow={false} className="rounded-none">
-          <div className="mb-8 flex items-center justify-between gap-8">
+          <div className="mb-8 flex flex-col lg:flex-row items-center justify-between gap-8">
             <div>
               <Typography variant="h5" color="blue-gray">
-                Brand list
+                Brand List
               </Typography>
               <Typography color="gray" className="mt-1 font-normal">
                 See information about all brands
               </Typography>
             </div>
-          </div>
-          <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
-            <div className="w-full md:w-72">
-              <Input
-                label="Search"
-                icon={<MagnifyingGlassIcon className="h-5 w-5" />}
-              />
-            </div>
-            <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
+            <div className="flex flex-col lg:flex-row items-center gap-4">
+              <div className="w-full lg:w-72">
+                <Input
+                  label="Search"
+                  icon={<MagnifyingGlassIcon className="h-5 w-5" />}
+                />
+              </div>
               <Button
-                onClick={() => openModal(null)}
+                onClick={() => handleOpenModal()}
                 className="flex items-center gap-3"
                 size="sm"
               >
@@ -104,123 +125,138 @@ export default function BrandList() {
             </div>
           </div>
         </CardHeader>
-        <CardBody className="overflow-scroll px-0">
-          <table className="mt-4 w-full min-w-max table-auto text-left">
-            <thead>
-              <tr>
-                {TABLE_HEAD.map((head, index) => (
-                  <th
-                    key={head}
-                    className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50"
-                  >
-                    <Typography
-                      variant="small"
-                      color="blue-gray"
-                      className="flex items-center justify-between gap-2 font-normal leading-none opacity-70"
+        <CardBody className="overflow-auto px-0 pt-0" style={{ maxHeight: "500px" }}>
+          {loading ? (
+            <Loader />
+          ) : (
+            <table className="mt-4 w-full min-w-max table-auto text-left">
+              <thead className="sticky top-0 z-10 bg-white shadow-md">
+                <tr>
+                  {TABLE_HEAD.map((head, index) => (
+                    <th
+                      key={head}
+                      className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50"
                     >
-                      {head}{" "}
-                      {index !== TABLE_HEAD.length - 1 && (
-                        <ChevronUpDownIcon
-                          strokeWidth={2}
-                          className="h-4 w-4"
-                        />
-                      )}
-                    </Typography>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {TABLE_ROWS.map((row, index) => {
-                const isLast = index === TABLE_ROWS.length - 1;
-                const classes = isLast
-                  ? "p-4"
-                  : "p-4 border-b border-blue-gray-50";
-
-                return (
-                  <tr key={row.name}>
-                    <td className={classes}>
-                      <div className="flex items-center gap-3">
-                        <div className="flex flex-col">
-                          <Typography
-                            variant="small"
-                            color="blue-gray"
-                            className="font-normal"
-                          >
-                            {row.name}
-                          </Typography>
-                        </div>
-                      </div>
-                    </td>
-                    <td className={classes}>
-                      <div className="flex items-center gap-3">
-                        <Avatar src={row.img} alt={row.name} size="sm" />
-                      </div>
-                    </td>
-                    <td className={classes}>
                       <Typography
                         variant="small"
                         color="blue-gray"
-                        className="font-normal"
+                        className="flex items-center justify-between gap-2 font-normal leading-none opacity-70"
                       >
-                        {row.date}
+                        {head}{" "}
+                        {index !== TABLE_HEAD.length - 1 && (
+                          <ChevronUpDownIcon
+                            strokeWidth={2}
+                            className="h-4 w-4"
+                          />
+                        )}
                       </Typography>
-                    </td>
-                    <td className={classes}>
-                      <div className="w-max">
-                        <Chip
-                          variant="ghost"
-                          size="sm"
-                          value={row.online ? "online" : "offline"}
-                          color={row.online ? "green" : "blue-gray"}
-                        />
-                      </div>
-                    </td>
-                    <td className={classes}>
-                      <Tooltip content="Edit Brand">
-                        <IconButton
-                          variant="text"
-                          onClick={() => openModal(row)}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {currentTableData.map(({ brand_name, logo_path, createdAt, is_active, _id }, index) => {
+                  const isLast = index === currentTableData.length - 1;
+                  const classes = isLast
+                    ? "p-4"
+                    : "p-4 border-b border-blue-gray-50";
+
+                  return (
+                    <tr key={_id}>
+                      <td className={classes}>
+                        <div className="flex items-center gap-3">
+                          <div className="flex flex-col">
+                            <Typography
+                              variant="small"
+                              color="blue-gray"
+                              className="font-normal"
+                            >
+                              {brand_name}
+                            </Typography>
+                          </div>
+                        </div>
+                      </td>
+                      <td className={classes}>
+                        <div className="flex items-center gap-3">
+                          <Avatar src={`${imageBaseURL}/${logo_path}`} alt={brand_name} size="sm" />
+                        </div>
+                      </td>
+                      <td className={classes}>
+                        <Typography
+                          variant="small"
+                          color="blue-gray"
+                          className="font-normal"
                         >
-                          <PencilIcon className="h-4 w-4" />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip content="Delete Brand">
-                        <IconButton variant="text">
-                          <TrashIcon className="h-4 w-4" />
-                        </IconButton>
-                      </Tooltip>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                          {new Date(createdAt).toLocaleDateString()}
+                        </Typography>
+                      </td>
+                      <td className={classes}>
+                        <div className="w-max">
+                          <Chip
+                            variant="ghost"
+                            size="sm"
+                            value={is_active ? "online" : "offline"}
+                            color={is_active ? "green" : "blue-gray"}
+                          />
+                        </div>
+                      </td>
+                      <td className={classes}>
+                        <Tooltip content="Edit Brand">
+                          <IconButton
+                            onClick={() => handleEditBrand({ _id, brand_name, logo_path, is_active })}
+                            variant="text"
+                          >
+                            <PencilIcon className="h-4 w-4" />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip content="Delete Brand">
+                          <IconButton
+                            onClick={() => handleDeleteBrand({ _id })}
+                            variant="text"
+                          >
+                            <TrashIcon className="h-4 w-4" />
+                          </IconButton>
+                        </Tooltip>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
         </CardBody>
         <CardFooter className="flex items-center justify-between border-t border-blue-gray-50 p-4">
           <Typography variant="small" color="blue-gray" className="font-normal">
-            Page 1 of 10
+            Page {currentPage} of {totalPages}
           </Typography>
-          <div className="flex gap-2">
-            <Button variant="outlined" size="sm">
+          <div className="flex gap-2 items-center">
+            <Button
+              variant="outlined"
+              size="sm"
+              onClick={() => handlePageChange("prev")}
+              disabled={currentPage === 1}
+            >
               Previous
             </Button>
-            <Button variant="outlined" size="sm">
+            <Button
+              variant="outlined"
+              size="sm"
+              onClick={() => handlePageChange("next")}
+              disabled={currentPage === totalPages}
+            >
               Next
             </Button>
           </div>
         </CardFooter>
       </Card>
-
-      <Modal
-        isOpen={isModalOpen}
-        onRequestClose={closeModal}
-        contentLabel="Add/Edit Brand"
-        className="fixed inset-0 flex items-center justify-center p-4"
-        overlayClassName="fixed inset-0 bg-black bg-opacity-50"
-      >
-        <AddBrand existingBrand={currentBrand} onCancel={closeModal} />
-      </Modal>
+      {openModal && (
+        <Suspense fallback={LazyLoader}>
+          <AddBrand
+            onCancel={handleCloseModal}
+            existingBrand={selectedBrand}
+          />
+        </Suspense>
+      )}
     </>
   );
 }

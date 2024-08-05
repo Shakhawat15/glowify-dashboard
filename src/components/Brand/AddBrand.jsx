@@ -1,12 +1,18 @@
-import { Dialog, DialogBody, DialogHeader } from "@material-tailwind/react";
+import { Dialog, DialogBody, DialogHeader, Spinner } from "@material-tailwind/react";
+import axios from "axios";
 import { useFormik } from "formik";
+import { useState } from "react";
 import { ToastContainer } from "react-toastify";
 import * as Yup from "yup";
+import { AxiosHeader, baseURL } from "../../API/config";
+import { ErrorToast, SuccessToast } from "../../helper/FormHelper";
 
 export function AddBrand({ existingBrand, onCancel }) {
+  const [loading, setLoading] = useState(false);
+
   const formik = useFormik({
     initialValues: {
-      name: existingBrand ? existingBrand.name : "",
+      name: existingBrand ? existingBrand.brand_name : "",
       logo: null,
     },
     validationSchema: Yup.object({
@@ -18,22 +24,39 @@ export function AddBrand({ existingBrand, onCancel }) {
       ),
     }),
     onSubmit: async (values) => {
-      console.log("values", values);
+      setLoading(true);
       const formData = new FormData();
-      formData.append("name", values.name);
+      formData.append("brand_name", values.name);
       if (values.logo) {
-        formData.append("logo", values.logo);
+        formData.append("logo_path", values.logo);
       }
-      // Handle form submission, e.g., send to backend
 
-      // Close the modal after successful submission if needed
-      onCancel();
+      try {
+        let response;
+        if (existingBrand) {
+          response = await axios.put(`${baseURL}/brands/update/${existingBrand._id}`, formData, AxiosHeader);
+        } else {
+          response = await axios.post(`${baseURL}/brands/create`, formData, AxiosHeader);
+        }
+        if (response.status === 200 || response.status === 201) {
+          SuccessToast(existingBrand ? "Brand updated successfully" : "Brand created successfully");
+          setTimeout(() => {
+            onCancel(); // Close the modal after showing the toast
+          }, 1000); 
+        } else {
+          throw new Error("Failed to save brand");
+        }
+      } catch (error) {
+        ErrorToast(error.message || "Failed to save brand");
+      } finally {
+        setLoading(false);
+      }
     },
   });
 
   return (
     <section className="grid place-items-center h-screen">
-      <Dialog className="p-4" size="md" open={true}>
+      <Dialog className="p-4" size="md" open={true} handler={onCancel}>
         <ToastContainer />
         <DialogHeader className="justify-between">
           <h4 className="text-xl font-semibold mb-4">
@@ -91,8 +114,9 @@ export function AddBrand({ existingBrand, onCancel }) {
               <button
                 type="submit"
                 className="py-2 px-4 text-white bg-indigo-600 hover:bg-indigo-700 rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                disabled={loading}
               >
-                {existingBrand ? "Update Brand" : "Add Brand"}
+                {loading ? <Spinner className="w-4 h-4" /> : existingBrand ? "Update Brand" : "Add Brand"}
               </button>
               <button
                 type="button"
