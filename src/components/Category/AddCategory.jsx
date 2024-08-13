@@ -20,16 +20,16 @@ export function AddCategory({ existingCategory, onCancel }) {
     },
     validationSchema: Yup.object({
       name: Yup.string().required("Category title is required!"),
-      icon: Yup.mixed().test(
-        "fileSize",
-        "Icon is required!",
-        (value) => !!value || !!existingCategory
-      ),
-      image: Yup.mixed().test(
-        "fileSize",
-        "Image is required!",
-        (value) => !!value || !!existingCategory
-      ),
+      // icon: Yup.mixed().test(
+      //   "fileSize",
+      //   "Icon is required!",
+      //   (value) => !!value || !!existingCategory
+      // ),
+      // image: Yup.mixed().test(
+      //   "fileSize",
+      //   "Image is required!",
+      //   (value) => !!value || !!existingCategory
+      // ),
     }),
     onSubmit: async (values) => {
       setLoading(true);
@@ -68,10 +68,10 @@ export function AddCategory({ existingCategory, onCancel }) {
   useEffect(() => {
     if (existingCategory) {
       if (existingCategory.icon_path) {
-        setIconPreview(`${baseURL}/${existingCategory.icon_path}`);
+        setIconPreview(existingCategory.icon_path);
       }
       if (existingCategory.image_path) {
-        setImagePreview(`${baseURL}/${existingCategory.image_path}`);
+        setImagePreview(existingCategory.image_path);
       }
     }
   }, [existingCategory]);
@@ -146,7 +146,7 @@ export function AddCategory({ existingCategory, onCancel }) {
               {iconPreview ? (
                 <div className="flex flex-col items-center">
                   <img
-                    src={existingCategory ? `${imageBaseURL}/${existingCategory.icon_path}` : iconPreview}
+                    src={existingCategory.icon_path == iconPreview ? `${imageBaseURL}/${existingCategory.icon_path}` : iconPreview}
                     alt="Icon Preview"
                     className="w-32 h-32 mb-2 object-contain"
                   />
@@ -182,7 +182,7 @@ export function AddCategory({ existingCategory, onCancel }) {
               {imagePreview ? (
                 <div className="flex flex-col items-center">
                   <img
-                    src={existingCategory ? `${imageBaseURL}/${existingCategory.image_path}` : imagePreview}
+                    src={existingCategory.image_path == imagePreview ? `${imageBaseURL}/${existingCategory.image_path}` : imagePreview}
                     alt="Image Preview"
                     className="w-32 h-32 mb-2 object-contain"
                   />

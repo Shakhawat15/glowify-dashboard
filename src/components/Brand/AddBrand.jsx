@@ -18,11 +18,11 @@ export function AddBrand({ existingBrand, onCancel }) {
     },
     validationSchema: Yup.object({
       name: Yup.string().required("Brand name is required!"),
-      logo: Yup.mixed().test(
-        "fileSize",
-        "Logo is required!",
-        (value) => !!value || !!existingBrand
-      ),
+      // logo: Yup.mixed().test(
+      //   "fileSize",
+      //   "Logo is required!",
+      //   (value) => !!value || !!existingBrand
+      // ),
     }),
     onSubmit: async (values) => {
       setLoading(true);
@@ -78,6 +78,9 @@ export function AddBrand({ existingBrand, onCancel }) {
     setLogoPreview(null);
   };
 
+  console.log('logoPreview', logoPreview);
+  console.log('existingBrand', existingBrand);
+
   return (
     <section className="grid place-items-center h-screen">
       <Dialog className="p-4" size="md" open={true} handler={onCancel}>
@@ -117,7 +120,7 @@ export function AddBrand({ existingBrand, onCancel }) {
                 <div className="flex flex-col items-center">
                 <img
                   src={
-                    existingBrand
+                    existingBrand.logo_path == logoPreview
                       ? `${imageBaseURL}/${existingBrand.logo_path}`
                       : logoPreview
                   }
