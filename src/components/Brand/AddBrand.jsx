@@ -4,7 +4,7 @@ import { useFormik } from "formik";
 import { useState, useEffect } from "react";
 import { ToastContainer } from "react-toastify";
 import * as Yup from "yup";
-import { AxiosHeader, baseURL, imageBaseURL } from "../../API/config";
+import { AxiosHeader, AxiosHeaderForImage, baseURL, imageBaseURL } from "../../API/config";
 import { ErrorToast, SuccessToast } from "../../helper/FormHelper";
 
 export function AddBrand({ existingBrand, onCancel }) {
@@ -35,9 +35,9 @@ export function AddBrand({ existingBrand, onCancel }) {
       try {
         let response;
         if (existingBrand) {
-          response = await axios.put(`${baseURL}/brands/update/${existingBrand._id}`, formData, AxiosHeader);
+          response = await axios.put(`${baseURL}/brands/update/${existingBrand._id}`, formData, AxiosHeaderForImage);
         } else {
-          response = await axios.post(`${baseURL}/brands/create`, formData, AxiosHeader);
+          response = await axios.post(`${baseURL}/brands/create`, formData, AxiosHeaderForImage);
         }
         if (response.status === 200 || response.status === 201) {
           SuccessToast(existingBrand ? "Brand updated successfully" : "Brand created successfully");
