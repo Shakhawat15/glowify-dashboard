@@ -146,7 +146,7 @@ export function AddCategory({ existingCategory, onCancel }) {
               {iconPreview ? (
                 <div className="flex flex-col items-center">
                   <img
-                    src={existingCategory.icon_path == iconPreview ? `${imageBaseURL}/${existingCategory.icon_path}` : iconPreview}
+                    src={existingCategory?.icon_path == iconPreview ? `${imageBaseURL}/${existingCategory.icon_path}` : iconPreview}
                     alt="Icon Preview"
                     className="w-32 h-32 mb-2 object-contain"
                   />
@@ -182,7 +182,7 @@ export function AddCategory({ existingCategory, onCancel }) {
               {imagePreview ? (
                 <div className="flex flex-col items-center">
                   <img
-                    src={existingCategory.image_path == imagePreview ? `${imageBaseURL}/${existingCategory.image_path}` : imagePreview}
+                    src={existingCategory?.image_path == imagePreview ? `${imageBaseURL}/${existingCategory.image_path}` : imagePreview}
                     alt="Image Preview"
                     className="w-32 h-32 mb-2 object-contain"
                   />

@@ -120,7 +120,7 @@ export function AddBrand({ existingBrand, onCancel }) {
                 <div className="flex flex-col items-center">
                 <img
                   src={
-                    existingBrand.logo_path == logoPreview
+                    existingBrand?.logo_path == logoPreview
                       ? `${imageBaseURL}/${existingBrand.logo_path}`
                       : logoPreview
                   }
