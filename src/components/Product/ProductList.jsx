@@ -1,127 +1,112 @@
 import {
   ChevronUpDownIcon,
   MagnifyingGlassIcon,
+  PlusIcon,
 } from "@heroicons/react/24/outline";
-import { PencilIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
+import { PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
 import {
-  Avatar,
   Button,
   Card,
   CardBody,
   CardFooter,
   CardHeader,
+  Chip,
   IconButton,
   Input,
-  Tab,
-  Tabs,
-  TabsHeader,
   Tooltip,
-  Typography,
+  Typography
 } from "@material-tailwind/react";
+import axios from "axios";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { AxiosHeader, baseURL } from "../../API/config";
+import { ErrorToast, SuccessToast } from "../../helper/FormHelper";
+import Loader from "../MasterLayout/Loader";
 
-const TABS = [
-  {
-    label: "All",
-    value: "all",
-  },
-  {
-    label: "Monitored",
-    value: "monitored",
-  },
-  {
-    label: "Unmonitored",
-    value: "unmonitored",
-  },
-];
+const TABLE_HEAD = ["Product", "SKU", "Category", "Brand", "Price", "Quantity", "Status", "Action"];
 
-const TABLE_HEAD = [
-  "Product",
-  "Brand",
-  "Category",
-  "RRP",
-  "Discount",
-  "Quantity",
-  "Action",
-];
-
-const TABLE_ROWS = [
-  {
-    img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-3.jpg",
-    title: "Vitamin C Serum",
-    rrp: 100,
-    discount: 10,
-    brand: "Lancome",
-    category: "Skincare",
-    quantity: 0,
-    date: "23/04/18",
-  },
-  {
-    img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-2.jpg",
-    title: "Hydrating Facial Cleanser",
-    rrp: 100,
-    discount: 10,
-    brand: "Makeup",
-    category: "Haircare",
-    quantity: 20,
-    date: "23/04/18",
-  },
-  {
-    img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-1.jpg",
-    title: "Anti-Aging Night Cream",
-    rrp: 100,
-    discount: 10,
-    brand: "Clinique",
-    category: "Fragrances",
-    quantity: 20,
-    date: "19/09/17",
-  },
-  {
-    img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-4.jpg",
-    title: "Matte Liquid Foundation",
-    rrp: 100,
-    discount: 10,
-    brand: "NARS",
-    category: "Fragrances",
-    quantity: 10,
-    date: "24/12/08",
-  },
-  {
-    img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-5.jpg",
-    title: "Volumizing Mascara",
-    rrp: 100,
-    discount: 10,
-    brand: "Glossier",
-    category: "Skincare",
-    quantity: 5,
-    date: "04/10/21",
-  },
-];
 export default function ProductList() {
   const navigate = useNavigate();
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  const addProduct = () => {
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(`${baseURL}/products/all`, AxiosHeader);
+      setProducts(response.data.data);
+    } catch (error) {
+      ErrorToast("Failed to fetch products");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreateProduct = () => {
     navigate("/product-create");
   };
 
+  const handleEditProduct = (product) => {
+    navigate(`/product-create`, { state: { product } });
+  };
+
+  const handleDeleteProduct = async (product) => {
+    setLoading(true);
+    try {
+      const response = await axios.delete(`${baseURL}/products/delete/${product._id}`, AxiosHeader);
+      if (response.status === 200) {
+        SuccessToast("Product deleted successfully");
+        setProducts(products.filter((p) => p._id !== product._id));
+      }
+    } catch (error) {
+      ErrorToast("Failed to delete product");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const totalPages = Math.ceil(products.length / itemsPerPage);
+  const handlePageChange = (direction) => {
+    if (direction === "next" && currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    } else if (direction === "prev" && currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const currentTableData = products.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   return (
+    <>
     <Card className="h-full w-full">
       <CardHeader floated={false} shadow={false} className="rounded-none">
-        <div className="mb-8 flex items-center justify-between gap-8">
+        <div className="mb-8 flex flex-col lg:flex-row items-center justify-between gap-8">
           <div>
             <Typography variant="h5" color="blue-gray">
-              Product list
+              Product List
             </Typography>
             <Typography color="gray" className="mt-1 font-normal">
               See information about all products
             </Typography>
           </div>
-          <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
-            <Button variant="outlined" size="sm">
-              view all
-            </Button>
+          <div className="flex flex-col lg:flex-row items-center gap-4">
+            <div className="w-full lg:w-72">
+              <Input
+                label="Search"
+                icon={<MagnifyingGlassIcon className="h-5 w-5" />}
+              />
+            </div>
             <Button
-              onClick={addProduct}
+              onClick={handleCreateProduct}
               className="flex items-center gap-3"
               size="sm"
             >
@@ -129,113 +114,81 @@ export default function ProductList() {
             </Button>
           </div>
         </div>
-        <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
-          <Tabs value="all" className="w-full md:w-max">
-            <TabsHeader>
-              {TABS.map(({ label, value }) => (
-                <Tab key={value} value={value}>
-                  &nbsp;&nbsp;{label}&nbsp;&nbsp;
-                </Tab>
-              ))}
-            </TabsHeader>
-          </Tabs>
-          <div className="w-full md:w-72">
-            <Input
-              label="Search"
-              icon={<MagnifyingGlassIcon className="h-5 w-5" />}
-            />
-          </div>
-        </div>
       </CardHeader>
-      <CardBody className="overflow-scroll px-0">
-        <table className="mt-4 w-full min-w-max table-auto text-left">
-          <thead>
-            <tr>
-              {TABLE_HEAD.map((head, index) => (
-                <th
-                  key={head}
-                  className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50"
-                >
-                  <Typography
-                    variant="small"
-                    color="blue-gray"
-                    className="flex items-center justify-between gap-2 font-normal leading-none opacity-70"
+      <CardBody className="overflow-auto px-0 pt-0" style={{ maxHeight: "500px" }}>
+        {loading ? (
+          <Loader />
+        ) : (
+          <table className="mt-4 w-full min-w-max table-auto text-left">
+            <thead className="sticky top-0 z-10 bg-white shadow-md">
+              <tr>
+                {TABLE_HEAD.map((head, index) => (
+                  <th
+                    key={head}
+                    className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50"
                   >
-                    {head}{" "}
-                    {index !== TABLE_HEAD.length - 1 && (
-                      <ChevronUpDownIcon strokeWidth={2} className="h-4 w-4" />
-                    )}
-                  </Typography>
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {TABLE_ROWS.map(
-              (
-                { img, title, brand, category, quantity, rrp, discount },
-                index
-              ) => {
-                const isLast = index === TABLE_ROWS.length - 1;
+                    <Typography
+                      variant="small"
+                      color="blue-gray"
+                      className="flex items-center justify-between gap-2 font-normal leading-none opacity-70"
+                    >
+                      {head}{" "}
+                      {index !== TABLE_HEAD.length - 1 && (
+                        <ChevronUpDownIcon
+                          strokeWidth={2}
+                          className="h-4 w-4"
+                        />
+                      )}
+                    </Typography>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {currentTableData.map(({ title, sku, category, brand, rrp, quantity, status, _id, discount_type, discount_price }, index) => {
+                const isLast = index === currentTableData.length - 1;
                 const classes = isLast
                   ? "p-4"
                   : "p-4 border-b border-blue-gray-50";
 
                 return (
-                  <tr key={title}>
+                  <tr key={_id}>
                     <td className={classes}>
-                      <div className="flex items-center gap-3">
-                        <Avatar src={img} alt={title} size="sm" />
-                        <div className="flex flex-col">
-                          <Typography
-                            variant="small"
-                            color="blue-gray"
-                            className="font-normal"
-                          >
-                            {title}
-                          </Typography>
-                          <Typography
-                            variant="small"
-                            color="blue-gray"
-                            className="font-normal opacity-70"
-                          >
-                            {category}
-                          </Typography>
-                        </div>
-                      </div>
+                      <Typography
+                        variant="small"
+                        color="blue-gray"
+                        className="font-normal"
+                      >
+                        {title}
+                      </Typography>
                     </td>
                     <td className={classes}>
-                      <div className="flex flex-col">
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-normal"
-                        >
-                          {brand}
-                        </Typography>
-                      </div>
+                      <Typography
+                        variant="small"
+                        color="blue-gray"
+                        className="font-normal"
+                      >
+                        {sku}
+                      </Typography>
                     </td>
                     <td className={classes}>
-                      <div className="flex flex-col">
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-normal"
-                        >
-                          {category}
-                        </Typography>
-                      </div>
+                      <Typography
+                        variant="small"
+                        color="blue-gray"
+                        className="font-normal"
+                      >
+                        {category.name}
+                      </Typography>
                     </td>
-                    {/* <td className={classes}>
-                      <div className="w-max">
-                        <Chip
-                          variant="ghost"
-                          size="sm"
-                          value={online ? "online" : "offline"}
-                          color={online ? "green" : "blue-gray"}
-                        />
-                      </div>
-                    </td> */}
+                    <td className={classes}>
+                      <Typography
+                        variant="small"
+                        color="blue-gray"
+                        className="font-normal"
+                      >
+                        {brand.name}
+                      </Typography>
+                    </td>
                     <td className={classes}>
                       <Typography
                         variant="small"
@@ -251,50 +204,68 @@ export default function ProductList() {
                         color="blue-gray"
                         className="font-normal"
                       >
-                        {discount}
-                      </Typography>
-                    </td>
-                    <td className={classes}>
-                      <Typography
-                        variant="small"
-                        color="blue-gray"
-                        className="font-normal"
-                      >
                         {quantity}
                       </Typography>
                     </td>
                     <td className={classes}>
+                      <div className="w-max">
+                        <Chip
+                          variant="ghost"
+                          size="sm"
+                          value={status === 'active' ? "Active" : "Inactive"}
+                          color={status === 'active' ? "green" : "blue-gray"}
+                        />
+                      </div>
+                    </td>
+                    <td className={classes}>
                       <Tooltip content="Edit Product">
-                        <IconButton variant="text">
+                        <IconButton
+                          onClick={() => handleEditProduct({ _id, title, sku, category, brand, rrp, quantity, status, discount_type, discount_price })}
+                          variant="text"
+                        >
                           <PencilIcon className="h-4 w-4" />
                         </IconButton>
                       </Tooltip>
                       <Tooltip content="Delete Product">
-                        <IconButton variant="text">
+                        <IconButton
+                          onClick={() => handleDeleteProduct({ _id })}
+                          variant="text"
+                        >
                           <TrashIcon className="h-4 w-4" />
                         </IconButton>
                       </Tooltip>
-                    </td>
-                  </tr>
-                );
-              }
-            )}
-          </tbody>
-        </table>
-      </CardBody>
-      <CardFooter className="flex items-center justify-between border-t border-blue-gray-50 p-4">
-        <Typography variant="small" color="blue-gray" className="font-normal">
-          Page 1 of 10
-        </Typography>
-        <div className="flex gap-2">
-          <Button variant="outlined" size="sm">
-            Previous
-          </Button>
-          <Button variant="outlined" size="sm">
-            Next
-          </Button>
-        </div>
-      </CardFooter>
-    </Card>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+        </CardBody>
+        <CardFooter className="flex items-center justify-between border-t border-blue-gray-50 p-4">
+          <Typography variant="small" color="blue-gray" className="font-normal">
+            Page {currentPage} of {totalPages}
+          </Typography>
+          <div className="flex gap-2 items-center">
+            <Button
+              variant="outlined"
+              size="sm"
+              onClick={() => handlePageChange("prev")}
+              disabled={currentPage === 1}
+            >
+              Previous
+            </Button>
+            <Button
+              variant="outlined"
+              size="sm"
+              onClick={() => handlePageChange("next")}
+              disabled={currentPage === totalPages}
+            >
+              Next
+            </Button>
+          </div>
+        </CardFooter>
+      </Card>
+    </>
   );
 }

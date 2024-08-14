@@ -44,6 +44,8 @@ export default function AddUser({ existingUser, onCancel }) {
     const password = passwordRef.current.value;
     const profilePhoto = profilePhotoRef.current.files[0];
 
+    console.log('profilePhoto', profilePhoto)
+
     if (IsEmpty(role)) {
       ErrorToast("Role is required!");
     } else if (IsEmpty(first_name)) {
