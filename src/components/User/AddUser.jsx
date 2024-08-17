@@ -58,9 +58,11 @@ export default function AddUser({ existingUser, onCancel }) {
       ErrorToast("Valid Phone is required!");
     } else if (IsEmpty(password)) {
       ErrorToast("Password is required!");
-    } else if (!profilePhoto && !existingUser) {
-      ErrorToast("Profile Photo is required");
-    } else {
+    } 
+    // else if (!profilePhoto && !existingUser) {
+    //   ErrorToast("Profile Photo is required");
+    // } 
+    else {
       const formData = new FormData();
       formData.append("role_id", role);
       formData.append("first_name", first_name);
