@@ -1,4 +1,10 @@
-import { Dialog, DialogBody, DialogHeader, Spinner } from "@material-tailwind/react";
+import {
+  Dialog,
+  DialogBody,
+  DialogHeader,
+  Spinner,
+  Button,
+} from "@material-tailwind/react";
 import axios from "axios";
 import { useFormik } from "formik";
 import { useState, useEffect } from "react";
@@ -20,16 +26,6 @@ export function AddCategory({ existingCategory, onCancel }) {
     },
     validationSchema: Yup.object({
       name: Yup.string().required("Category title is required!"),
-      // icon: Yup.mixed().test(
-      //   "fileSize",
-      //   "Icon is required!",
-      //   (value) => !!value || !!existingCategory
-      // ),
-      // image: Yup.mixed().test(
-      //   "fileSize",
-      //   "Image is required!",
-      //   (value) => !!value || !!existingCategory
-      // ),
     }),
     onSubmit: async (values) => {
       setLoading(true);
@@ -68,10 +64,10 @@ export function AddCategory({ existingCategory, onCancel }) {
   useEffect(() => {
     if (existingCategory) {
       if (existingCategory.icon_path) {
-        setIconPreview(existingCategory.icon_path);
+        setIconPreview(`${imageBaseURL}/${existingCategory.icon_path}`);
       }
       if (existingCategory.image_path) {
-        setImagePreview(existingCategory.image_path);
+        setImagePreview(`${imageBaseURL}/${existingCategory.image_path}`);
       }
     }
   }, [existingCategory]);
@@ -111,128 +107,126 @@ export function AddCategory({ existingCategory, onCancel }) {
   };
 
   return (
-    <section className="grid place-items-center h-screen">
-      <Dialog className="p-4" size="md" open={true} handler={onCancel}>
-        <ToastContainer />
-        <DialogHeader className="justify-between">
-          <h4 className="text-xl font-semibold mb-4">
-            {existingCategory ? "Update Category" : "Add Category"}
-          </h4>
-        </DialogHeader>
-        <DialogBody className="overflow-auto">
-          <form onSubmit={formik.handleSubmit}>
-            <div className="mb-4">
-              <label htmlFor="name" className="block text-gray-700">Category Title</label>
-              <input
-                id="name"
-                type="text"
-                name="name"
-                placeholder="Category Title"
-                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
-                  formik.touched.name && formik.errors.name
-                    ? "border-red-500"
-                    : "border-gray-300"
-                }`}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                value={formik.values.name}
-              />
-              <div className="text-red-500 mt-1" style={{ minHeight: "1.25rem" }}>
-                {formik.touched.name && formik.errors.name ? <span>{formik.errors.name}</span> : null}
+    <Dialog size="md" open={true} handler={onCancel} className="p-6 bg-white rounded-lg shadow-lg">
+      <ToastContainer />
+      <DialogHeader className="bg-gray-100 border-b border-gray-300">
+        <h4 className="text-xl font-semibold text-gray-800">
+          {existingCategory ? "Update Category" : "Add Category"}
+        </h4>
+      </DialogHeader>
+      <DialogBody className="p-6">
+        <form onSubmit={formik.handleSubmit} className="space-y-6">
+          <div>
+            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+              Category Title
+            </label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              placeholder="Enter category title"
+              className={`w-full px-4 py-3 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${
+                formik.touched.name && formik.errors.name ? "border-red-500" : "border-gray-300"
+              }`}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              value={formik.values.name}
+            />
+            {formik.touched.name && formik.errors.name ? (
+              <p className="mt-1 text-xs text-red-600">{formik.errors.name}</p>
+            ) : null}
+          </div>
+
+          <div>
+            <label htmlFor="icon" className="block text-sm font-medium text-gray-700 mb-2">
+              Category Icon
+            </label>
+            {iconPreview ? (
+              <div className="relative w-full h-32 bg-gray-100 border border-gray-300 rounded-md overflow-hidden">
+                <img
+                  src={iconPreview}
+                  alt="Icon Preview"
+                  className="object-contain w-full h-full"
+                />
+                <button
+                  type="button"
+                  onClick={handleRemoveIcon}
+                  className="absolute top-2 right-2 bg-red-600 text-white px-2 py-1 text-xs rounded-md hover:bg-red-700 transition-colors"
+                >
+                  Remove
+                </button>
               </div>
-            </div>
-            <div className="mb-4">
-              <label htmlFor="icon" className="block text-gray-700">Icon</label>
-              {iconPreview ? (
-                <div className="flex flex-col items-center">
-                  <img
-                    src={existingCategory?.icon_path == iconPreview ? `${imageBaseURL}/${existingCategory.icon_path}` : iconPreview}
-                    alt="Icon Preview"
-                    className="w-32 h-32 mb-2 object-contain"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleRemoveIcon}
-                    className="text-red-500 hover:text-red-700"
-                  >
-                    Remove Icon
-                  </button>
-                </div>
-              ) : (
-                <>
-                  <input
-                    id="icon"
-                    type="file"
-                    name="icon"
-                    className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
-                      formik.touched.icon && formik.errors.icon
-                        ? "border-red-500"
-                        : "border-gray-300"
-                    }`}
-                    onChange={handleIconChange}
-                  />
-                  <div className="text-red-500 mt-1" style={{ minHeight: "1.25rem" }}>
-                    {formik.touched.icon && formik.errors.icon ? <span>{formik.errors.icon}</span> : null}
-                  </div>
-                </>
-              )}
-            </div>
-            <div className="mb-4">
-              <label htmlFor="image" className="block text-gray-700">Image</label>
-              {imagePreview ? (
-                <div className="flex flex-col items-center">
-                  <img
-                    src={existingCategory?.image_path == imagePreview ? `${imageBaseURL}/${existingCategory.image_path}` : imagePreview}
-                    alt="Image Preview"
-                    className="w-32 h-32 mb-2 object-contain"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleRemoveImage}
-                    className="text-red-500 hover:text-red-700"
-                  >
-                    Remove Image
-                  </button>
-                </div>
-              ) : (
-                <>
-                  <input
-                    id="image"
-                    type="file"
-                    name="image"
-                    className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 ${
-                      formik.touched.image && formik.errors.image
-                        ? "border-red-500"
-                        : "border-gray-300"
-                    }`}
-                    onChange={handleImageChange}
-                  />
-                  <div className="text-red-500 mt-1" style={{ minHeight: "1.25rem" }}>
-                    {formik.touched.image && formik.errors.image ? <span>{formik.errors.image}</span> : null}
-                  </div>
-                </>
-              )}
-            </div>
-            <div className="flex justify-between">
-              <button
-                type="submit"
-                className="py-2 px-4 text-white bg-indigo-600 hover:bg-indigo-700 rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                disabled={loading}
-              >
-                {loading ? <Spinner className="w-4 h-4" /> : existingCategory ? "Update Category" : "Add Category"}
-              </button>
-              <button
-                type="button"
-                onClick={onCancel}
-                className="py-2 px-4 text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
-              >
-                Cancel
-              </button>
-            </div>
-          </form>
-        </DialogBody>
-      </Dialog>
-    </section>
+            ) : (
+              <input
+                type="file"
+                id="icon"
+                name="icon"
+                className={`w-full px-4 py-3 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${
+                  formik.touched.icon && formik.errors.icon ? "border-red-500" : "border-gray-300"
+                }`}
+                onChange={handleIconChange}
+              />
+            )}
+            {formik.touched.icon && formik.errors.icon ? (
+              <p className="mt-1 text-xs text-red-600">{formik.errors.icon}</p>
+            ) : null}
+          </div>
+
+          <div>
+            <label htmlFor="image" className="block text-sm font-medium text-gray-700 mb-2">
+              Category Image
+            </label>
+            {imagePreview ? (
+              <div className="relative w-full h-32 bg-gray-100 border border-gray-300 rounded-md overflow-hidden">
+                <img
+                  src={imagePreview}
+                  alt="Image Preview"
+                  className="object-contain w-full h-full"
+                />
+                <button
+                  type="button"
+                  onClick={handleRemoveImage}
+                  className="absolute top-2 right-2 bg-red-600 text-white px-2 py-1 text-xs rounded-md hover:bg-red-700 transition-colors"
+                >
+                  Remove
+                </button>
+              </div>
+            ) : (
+              <input
+                type="file"
+                id="image"
+                name="image"
+                className={`w-full px-4 py-3 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${
+                  formik.touched.image && formik.errors.image ? "border-red-500" : "border-gray-300"
+                }`}
+                onChange={handleImageChange}
+              />
+            )}
+            {formik.touched.image && formik.errors.image ? (
+              <p className="mt-1 text-xs text-red-600">{formik.errors.image}</p>
+            ) : null}
+          </div>
+
+          <div className="flex gap-4">
+            <Button
+              type="submit"
+              className="py-2 px-4 text-white rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+              disabled={loading}
+              color="blue"
+            >
+              {loading ? <Spinner className="w-4 h-4" /> : existingCategory ? "Update Category" : "Add Category"}
+            </Button>
+            <Button
+              type="button"
+              onClick={onCancel}
+              className="py-2 px-4 text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors"
+            >
+              Cancel
+            </Button>
+          </div>
+        </form>
+      </DialogBody>
+    </Dialog>
   );
 }
 

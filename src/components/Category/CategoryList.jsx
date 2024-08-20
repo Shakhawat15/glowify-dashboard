@@ -11,11 +11,12 @@ import {
   CardBody,
   CardFooter,
   CardHeader,
-  Chip,
   IconButton,
   Input,
   Tooltip,
   Typography,
+  Chip,
+  Switch,
 } from "@material-tailwind/react";
 import axios from "axios";
 import { Suspense, useEffect, useState } from "react";
@@ -25,7 +26,10 @@ import LazyLoader from "../MasterLayout/LazyLoader";
 import Loader from "../MasterLayout/Loader";
 import AddCategory from "./AddCategory";
 
-const TABLE_HEAD = ["Title", "Icon", "Image", "Create Date", "Status", "Action"];
+// Define the default image URL
+const DEFAULT_IMAGE_URL = "https://via.placeholder.com/150?text=No+Image";
+
+const TABLE_HEAD = ["S.No", "Title", "Icon", "Image", "Create Date", "Status", "Action"];
 
 export default function CategoryList() {
   const [openModal, setOpenModal] = useState(false);
@@ -33,7 +37,7 @@ export default function CategoryList() {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [itemsPerPage, setItemsPerPage] = useState(8);
 
   useEffect(() => {
     fetchCategories();
@@ -81,6 +85,27 @@ export default function CategoryList() {
     }
   };
 
+  const handleStatusChange = async (categoryId, currentStatus) => {
+    setLoading(true);
+    try {
+      const response = await axios.patch(
+        `${baseURL}/categories/update-status/${categoryId}`,
+        { is_active: !currentStatus },
+        AxiosHeader
+      );
+      if (response.status === 200) {
+        SuccessToast("Category status updated successfully");
+        setCategories(categories.map((category) =>
+          category._id === categoryId ? { ...category, is_active: !currentStatus } : category
+        ));
+      }
+    } catch (error) {
+      ErrorToast("Failed to update category status");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const totalPages = Math.ceil(categories.length / itemsPerPage);
   const handlePageChange = (direction) => {
     if (direction === "next" && currentPage < totalPages) {
@@ -97,19 +122,23 @@ export default function CategoryList() {
 
   return (
     <>
-      <Card className="h-full w-full">
-        <CardHeader floated={false} shadow={false} className="rounded-none">
-          <div className="mb-8 flex flex-col lg:flex-row items-center justify-between gap-8">
+      <Card className="w-full h-full">
+        <CardHeader
+          floated={false}
+          shadow={false}
+          className="rounded-none p-5 bg-gray-100 border-b border-gray-200"
+        >
+          <div className="mb-6 flex flex-col lg:flex-row items-center justify-between gap-6">
             <div>
-              <Typography variant="h5" color="blue-gray">
+              <Typography variant="h5" color="blue-gray" className="font-semibold">
                 Category List
               </Typography>
               <Typography color="gray" className="mt-1 font-normal">
-                See information about all categories
+                Manage all your categories here
               </Typography>
             </div>
             <div className="flex flex-col lg:flex-row items-center gap-4">
-              <div className="w-full lg:w-72">
+              <div className="w-full lg:w-80">
                 <Input
                   label="Search"
                   icon={<MagnifyingGlassIcon className="h-5 w-5" />}
@@ -119,119 +148,133 @@ export default function CategoryList() {
                 onClick={() => handleOpenModal()}
                 className="flex items-center gap-3"
                 size="sm"
+                color="blue"
               >
                 <PlusIcon strokeWidth={2} className="h-4 w-4" /> Add Category
               </Button>
             </div>
           </div>
         </CardHeader>
-        <CardBody className="overflow-auto px-0 pt-0" style={{ maxHeight: "500px" }}>
+        <CardBody className="overflow-hidden px-0 pt-0">
           {loading ? (
             <Loader />
           ) : (
-            <table className="mt-4 w-full min-w-max table-auto text-left">
-              <thead className="sticky top-0 z-10 bg-white shadow-md">
-                <tr>
-                  {TABLE_HEAD.map((head, index) => (
-                    <th
-                      key={head}
-                      className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50"
-                    >
-                      <Typography
-                        variant="small"
-                        color="blue-gray"
-                        className="flex items-center justify-between gap-2 font-normal leading-none opacity-70"
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-max table-auto text-left border-separate border-spacing-0">
+                <thead className="bg-gray-200 border-b border-gray-300 sticky top-0 z-10">
+                  <tr>
+                    {TABLE_HEAD.map((head, index) => (
+                      <th
+                        key={head}
+                        className="p-4 border-b border-gray-300 bg-gray-100 text-gray-700 font-medium"
                       >
-                        {head}{" "}
-                        {index !== TABLE_HEAD.length - 1 && (
-                          <ChevronUpDownIcon
-                            strokeWidth={2}
-                            className="h-4 w-4"
-                          />
-                        )}
-                      </Typography>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {currentTableData.map(({ category_name, icon_path, image_path, createdAt, is_active, _id }, index) => {
-                  const isLast = index === currentTableData.length - 1;
-                  const classes = isLast
-                    ? "p-4"
-                    : "p-4 border-b border-blue-gray-50";
-
-                  return (
-                    <tr key={_id}>
-                      <td className={classes}>
-                        <div className="flex items-center gap-3">
-                          <div className="flex flex-col">
-                            <Typography
-                              variant="small"
-                              color="blue-gray"
-                              className="font-normal"
-                            >
-                              {category_name}
-                            </Typography>
-                          </div>
-                        </div>
-                      </td>
-                      <td className={classes}>
-                        <div className="flex items-center gap-3">
-                          <Avatar src={`${imageBaseURL}/${icon_path}`} alt={category_name} size="sm" />
-                        </div>
-                      </td>
-                      <td className={classes}>
-                        <div className="flex items-center gap-3">
-                          <Avatar src={`${imageBaseURL}/${image_path}`} alt={category_name} size="sm" />
-                        </div>
-                      </td>
-                      <td className={classes}>
                         <Typography
                           variant="small"
-                          color="blue-gray"
-                          className="font-normal"
+                          color="gray"
+                          className="flex items-center justify-between gap-2 font-normal leading-none"
                         >
-                          {new Date(createdAt).toLocaleDateString()}
+                          {head}{" "}
+                          {index !== TABLE_HEAD.length - 1 && (
+                            <ChevronUpDownIcon
+                              strokeWidth={2}
+                              className="h-4 w-4 text-gray-500"
+                            />
+                          )}
                         </Typography>
-                      </td>
-                      <td className={classes}>
-                        <div className="w-max">
-                          <Chip
-                            variant="ghost"
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {currentTableData.map(({ category_name, icon_path, image_path, createdAt, is_active, _id }, index) => {
+                    const isLast = index === currentTableData.length - 1;
+                    const classes = isLast
+                      ? "p-4"
+                      : "p-4 border-b border-gray-200";
+                    const serialNumber = (currentPage - 1) * itemsPerPage + index + 1;
+
+                    return (
+                      <tr key={_id}>
+                        <td className={classes}>
+                          <Typography
+                            variant="small"
+                            color="gray"
+                            className="font-normal"
+                          >
+                            {serialNumber}
+                          </Typography>
+                        </td>
+                        <td className={classes}>
+                          <Typography
+                            variant="small"
+                            color="gray"
+                            className="font-normal"
+                          >
+                            {category_name}
+                          </Typography>
+                        </td>
+                        <td className={classes}>
+                          <Avatar
+                            src={icon_path ? `${imageBaseURL}/${icon_path}` : DEFAULT_IMAGE_URL}
+                            alt={category_name}
                             size="sm"
-                            value={is_active ? "online" : "offline"}
-                            color={is_active ? "green" : "blue-gray"}
                           />
-                        </div>
-                      </td>
-                      <td className={classes}>
-                        <Tooltip content="Edit Category">
-                          <IconButton
-                            onClick={() => handleEditCategory({ _id, category_name, icon_path, image_path, is_active })}
-                            variant="text"
+                        </td>
+                        <td className={classes}>
+                          <Avatar
+                            src={image_path ? `${imageBaseURL}/${image_path}` : DEFAULT_IMAGE_URL}
+                            alt={category_name}
+                            size="sm"
+                          />
+                        </td>
+                        <td className={classes}>
+                          <Typography
+                            variant="small"
+                            color="gray"
+                            className="font-normal"
                           >
-                            <PencilIcon className="h-4 w-4" />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip content="Delete Category">
-                          <IconButton
-                            onClick={() => handleDeleteCategory({ _id })}
-                            variant="text"
-                          >
-                            <TrashIcon className="h-4 w-4" />
-                          </IconButton>
-                        </Tooltip>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                            {new Date(createdAt).toLocaleDateString()}
+                          </Typography>
+                        </td>
+                        <td className={classes}>
+                          <Switch
+                            checked={is_active}
+                            onChange={() => handleStatusChange(_id, is_active)}
+                            color={is_active ? "green" : "gray"}
+                          />
+                        </td>
+                        <td className={classes}>
+                          <div className="flex gap-2">
+                            <Tooltip content="Edit Category">
+                              <IconButton
+                                onClick={() => handleEditCategory({ _id, category_name, icon_path, image_path, is_active })}
+                                variant="text"
+                                color="blue"
+                              >
+                                <PencilIcon className="h-5 w-5" />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip content="Delete Category">
+                              <IconButton
+                                onClick={() => handleDeleteCategory({ _id })}
+                                variant="text"
+                                color="red"
+                              >
+                                <TrashIcon className="h-5 w-5" />
+                              </IconButton>
+                            </Tooltip>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           )}
         </CardBody>
-        <CardFooter className="flex items-center justify-between border-t border-blue-gray-50 p-4">
-          <Typography variant="small" color="blue-gray" className="font-normal">
+        <CardFooter className="flex items-center justify-between border-t border-gray-200 p-4">
+          <Typography variant="small" color="gray" className="font-normal">
             Page {currentPage} of {totalPages}
           </Typography>
           <div className="flex gap-2 items-center">
