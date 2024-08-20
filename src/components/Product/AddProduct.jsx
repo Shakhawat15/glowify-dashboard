@@ -25,7 +25,7 @@ export default function ProductForm() {
   const [category, setCategory] = useState(existingProduct?.category._id || "");
   const [brand, setBrand] = useState(existingProduct?.brand._id || "");
   const [title, setTitle] = useState(existingProduct?.title || "");
-  const [price, setPrice] = useState(existingProduct?.price || "");
+  const [price, setPrice] = useState(existingProduct?.rrp || "");
   const [quantity, setQuantity] = useState(existingProduct?.quantity || "");
   const [sku, setSku] = useState(existingProduct?.sku || "");
   const [discountType, setDiscountType] = useState(existingProduct?.discount_type || "fixed");
@@ -101,11 +101,13 @@ export default function ProductForm() {
       ErrorToast("Quantity is required");
     } else if (IsEmpty(sku)) {
       ErrorToast("SKU is required");
-    } else if (IsEmpty(discountType)) {
-      ErrorToast("Discount Type is required");
-    } else if (IsEmpty(discountPrice)) {
-      ErrorToast("Discount Price is required");
-    } else {
+    } 
+    // else if (IsEmpty(discountType)) {
+    //   ErrorToast("Discount Type is required");
+    // } else if (IsEmpty(discountPrice)) {
+    //   ErrorToast("Discount Price is required");
+    // }
+     else {
       const formData = new FormData();
     formData.append("category_id", category);
     formData.append("brand_id", brand);
