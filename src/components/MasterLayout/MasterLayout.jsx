@@ -353,24 +353,6 @@ export default function MasterLayout({ children }) {
                 </List>
               </AccordionBody>
             </Accordion>
-
-            <NavLink
-              className={({ isActive }) =>
-                `flex items-center p-2 rounded-md mt-2 transition-colors ${
-                  isActive
-                    ? "bg-blue-gray-100 text-blue-500"
-                    : "hover:bg-blue-gray-50"
-                }`
-              }
-              to="/logout"
-            >
-              <ListItemPrefix>
-                <PowerIcon className="h-5 w-5" />
-              </ListItemPrefix>
-              <Typography color="blue-gray" className="mr-auto font-normal">
-                Log Out
-              </Typography>
-            </NavLink>
           </List>
         </div>
         <main className="flex-grow overflow-auto p-4">{children}</main>

@@ -11,10 +11,13 @@ import {
   Card,
   CardContent,
   Typography,
+  Divider,
+  Box,
+  Fade,
+  Tooltip,
 } from "@mui/material";
-import { Delete } from "@mui/icons-material";
+import { Delete, AddCircleOutline } from "@mui/icons-material";
 
-// Mock available pages
 const availablePages = [
   { id: 1, title: "Home" },
   { id: 2, title: "About" },
@@ -22,12 +25,8 @@ const availablePages = [
   { id: 4, title: "Contact" },
 ];
 
-// Utility function to generate slugs
 const generateSlug = (title) => {
-  return title
-    .toLowerCase()
-    .replace(/\s+/g, "-")
-    .replace(/[^\w\-]+/g, "");
+  return title.toLowerCase().replace(/\s+/g, "-").replace(/[^\w\-]+/g, "");
 };
 
 export default function AddMenu() {
@@ -54,7 +53,10 @@ export default function AddMenu() {
   };
 
   const handleAddSelectedPages = () => {
-    setMenuItems([...menuItems, ...selectedPages]);
+    const newItems = selectedPages.filter(page => 
+      !menuItems.some(item => item.id === page.id)
+    );
+    setMenuItems([...menuItems, ...newItems]);
     setSelectedPages([]);
   };
 
@@ -71,102 +73,133 @@ export default function AddMenu() {
       })),
     };
     console.log("Saved Menu:", menu);
-    // Handle menu saving, e.g., send to backend
     setMenuName("");
     setMenuItems([]);
     setStep(1);
   };
 
   return (
-    <div style={{ padding: "20px", display: "flex", justifyContent: "center" }}>
-      <Card style={{ width: "600px", padding: "20px" }}>
+    <Box
+      sx={{
+        p: 4,
+        display: "flex",
+        justifyContent: "center",
+        backgroundColor: "#f4f6f8",
+        minHeight: "100vh",
+      }}
+    >
+      <Card sx={{ width: 600, p: 3, borderRadius: 3, boxShadow: 4 }}>
         <CardContent>
-          <Typography variant="h4" gutterBottom>
+          <Typography variant="h4" fontWeight="bold" gutterBottom>
             Menu Builder
           </Typography>
 
           {step === 1 && (
-            <>
-              <TextField
-                label="Menu Name"
-                variant="outlined"
-                value={menuName}
-                onChange={(e) => setMenuName(e.target.value)}
-                style={{ marginBottom: "20px" }}
-                fullWidth
-              />
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleAddMenuItem}
-                disabled={!menuName.trim()}
-              >
-                Create Menu
-              </Button>
-            </>
+            <Fade in={step === 1}>
+              <Box>
+                <TextField
+                  label="Menu Name"
+                  variant="outlined"
+                  value={menuName}
+                  onChange={(e) => setMenuName(e.target.value)}
+                  fullWidth
+                  sx={{ mb: 3 }}
+                />
+                <Button
+                  variant="contained"
+                  color="primary"
+                  startIcon={<AddCircleOutline />}
+                  onClick={handleAddMenuItem}
+                  disabled={!menuName.trim()}
+                  sx={{ textTransform: "none", fontWeight: "bold" }}
+                >
+                  Create Menu
+                </Button>
+              </Box>
+            </Fade>
           )}
 
           {step === 2 && (
-            <>
-              <Typography variant="h6" gutterBottom>
-                Select Pages
-              </Typography>
-              <List>
-                {availablePages.map((page) => (
-                  <ListItem
-                    key={page.id}
-                    button
-                    onClick={() => handleTogglePage(page)}
-                  >
-                    <Checkbox
-                      checked={selectedPages.indexOf(page) !== -1}
-                      tabIndex={-1}
-                      disableRipple
-                    />
-                    <ListItemText primary={page.title} />
-                  </ListItem>
-                ))}
-              </List>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleAddSelectedPages}
-                style={{ marginTop: "20px" }}
-                disabled={selectedPages.length === 0}
-              >
-                Add Selected Pages to Menu
-              </Button>
-            </>
+            <Fade in={step === 2}>
+              <Box>
+                <Typography variant="h6" fontWeight="medium" gutterBottom>
+                  Select Pages
+                </Typography>
+                <List sx={{ mb: 3 }}>
+                  {availablePages.map((page) => (
+                    <ListItem
+                      key={page.id}
+                      button
+                      onClick={() => handleTogglePage(page)}
+                      sx={{
+                        borderRadius: 2,
+                        transition: "all 0.3s ease",
+                        "&:hover": {
+                          backgroundColor: "#f0f4ff",
+                        },
+                      }}
+                    >
+                      <Checkbox
+                        checked={selectedPages.indexOf(page) !== -1}
+                        tabIndex={-1}
+                        disableRipple
+                        sx={{ color: "#1a73e8" }}
+                      />
+                      <ListItemText primary={page.title} />
+                    </ListItem>
+                  ))}
+                </List>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleAddSelectedPages}
+                  disabled={selectedPages.length === 0}
+                  sx={{ textTransform: "none", fontWeight: "bold" }}
+                >
+                  Add Selected Pages to Menu
+                </Button>
+              </Box>
+            </Fade>
           )}
 
           {menuItems.length > 0 && (
             <>
-              <Typography
-                variant="h6"
-                gutterBottom
-                style={{ marginTop: "40px" }}
-              >
+              <Divider sx={{ my: 4 }} />
+              <Typography variant="h6" fontWeight="medium" gutterBottom>
                 Menu Items
               </Typography>
-              <List component={Paper}>
-                {menuItems.map((item) => (
-                  <ListItem key={item.id}>
-                    <ListItemText primary={item.title} />
-                    <IconButton
-                      edge="end"
-                      aria-label="delete"
-                      onClick={() => handleDeleteMenuItem(item.id)}
+              <Paper variant="outlined" sx={{ mb: 2, borderRadius: 2 }}>
+                <List>
+                  {menuItems.map((item) => (
+                    <ListItem
+                      key={item.id}
+                      secondaryAction={
+                        <Tooltip title="Delete" arrow>
+                          <IconButton
+                            edge="end"
+                            onClick={() => handleDeleteMenuItem(item.id)}
+                            sx={{ color: "#e53935" }}
+                          >
+                            <Delete />
+                          </IconButton>
+                        </Tooltip>
+                      }
+                      sx={{
+                        "&:hover": {
+                          backgroundColor: "#f5f5f5",
+                        },
+                      }}
                     >
-                      <Delete />
-                    </IconButton>
-                  </ListItem>
-                ))}
-              </List>
+                      <ListItemText primary={item.title} />
+                    </ListItem>
+                  ))}
+                </List>
+              </Paper>
               <Button
                 variant="contained"
                 color="secondary"
                 onClick={handleSaveMenu}
-                style={{ marginTop: "20px" }}
+                sx={{ textTransform: "none", fontWeight: "bold" }}
               >
                 Save Menu
               </Button>
@@ -174,6 +207,6 @@ export default function AddMenu() {
           )}
         </CardContent>
       </Card>
-    </div>
+    </Box>
   );
 }
