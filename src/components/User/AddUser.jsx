@@ -1,11 +1,16 @@
-import { Dialog, DialogBody, DialogHeader } from "@material-tailwind/react";
+import {
+  Dialog,
+  DialogBody,
+  DialogHeader,
+  Spinner,
+  Button,
+} from "@material-tailwind/react";
 import axios from "axios";
 import { useEffect, useRef, useState } from "react";
 import { ToastContainer } from "react-toastify";
 import { AxiosHeader, baseURL } from "../../API/config";
 import { ErrorToast, IsEmpty, SuccessToast } from "../../helper/FormHelper";
 import Loader from "../MasterLayout/Loader";
-
 
 export default function AddUser({ existingUser, onCancel }) {
   const roleRef = useRef(null);
@@ -18,14 +23,16 @@ export default function AddUser({ existingUser, onCancel }) {
 
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [open, setOpen] = useState(true);
-
-  console.log('roles', roles)
+  const [logoPreview, setLogoPreview] = useState(null);
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     const fetchRoles = async () => {
       try {
-        const response = await axios.get(`${baseURL}/user-roles/all`, AxiosHeader);
+        const response = await axios.get(
+          `${baseURL}/user-roles/all`,
+          AxiosHeader
+        );
         setRoles(response.data.data);
       } catch (error) {
         ErrorToast("Failed to fetch user roles");
@@ -35,7 +42,9 @@ export default function AddUser({ existingUser, onCancel }) {
     fetchRoles();
   }, []);
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
     const role = roleRef.current.value;
     const first_name = firstNameRef.current.value;
     const last_name = lastNameRef.current.value;
@@ -44,59 +53,50 @@ export default function AddUser({ existingUser, onCancel }) {
     const password = passwordRef.current.value;
     const profilePhoto = profilePhotoRef.current.files[0];
 
-    console.log('profilePhoto', profilePhoto)
+    let newErrors = {};
 
-    if (IsEmpty(role)) {
-      ErrorToast("Role is required!");
-    } else if (IsEmpty(first_name)) {
-      ErrorToast("First Name is required!");
-    } else if (IsEmpty(last_name)) {
-      ErrorToast("Last Name is required!");
-    } else if (IsEmpty(email)) {
-      ErrorToast("Valid Email is required!");
-    } else if (IsEmpty(phone)) {
-      ErrorToast("Valid Phone is required!");
-    } else if (IsEmpty(password)) {
-      ErrorToast("Password is required!");
-    } 
-    // else if (!profilePhoto && !existingUser) {
-    //   ErrorToast("Profile Photo is required");
-    // } 
-    else {
-      const formData = new FormData();
-      formData.append("role_id", role);
-      formData.append("first_name", first_name);
-      formData.append("last_name", last_name);
-      formData.append("email", email);
-      formData.append("phone", phone);
-      formData.append("password", password);
-      if (profilePhoto) formData.append("photo_path", profilePhoto);
+    if (IsEmpty(role)) newErrors.role = "Role is required!";
+    if (IsEmpty(first_name)) newErrors.first_name = "First Name is required!";
+    if (IsEmpty(last_name)) newErrors.last_name = "Last Name is required!";
+    if (IsEmpty(email)) newErrors.email = "Valid Email is required!";
+    if (IsEmpty(phone)) newErrors.phone = "Valid Phone is required!";
+    if (IsEmpty(password)) newErrors.password = "Password is required!";
 
-      setLoading(true);
-      try {
-        let response;
-        if (existingUser) {
-          // Update existing user
-          const URL = `${baseURL}/users/update/${existingUser["_id"]}`;
-          response = await axios.put(URL, formData, AxiosHeader);
-        } else {
-          // Register new user
-          const URL = `${baseURL}/users/register`;
-          response = await axios.post(URL, formData, AxiosHeader);
-        }
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
 
-        if (response.status === 200 || response.status === 201) {
-          SuccessToast(response.data.message);
-          // Delay closing the modal
-          setTimeout(() => {
-            onCancel(); // Close the modal after showing the toast
-          }, 1000); // Adjust the delay as needed
-        }
-      } catch (error) {
-        ErrorToast(error.response?.data?.message || "An error occurred");
-      } finally {
-        setLoading(false);
+    const formData = new FormData();
+    formData.append("role_id", role);
+    formData.append("first_name", first_name);
+    formData.append("last_name", last_name);
+    formData.append("email", email);
+    formData.append("phone", phone);
+    formData.append("password", password);
+    if (profilePhoto) formData.append("photo_path", profilePhoto);
+
+    setLoading(true);
+    try {
+      let response;
+      if (existingUser) {
+        const URL = `${baseURL}/users/update/${existingUser["_id"]}`;
+        response = await axios.put(URL, formData, AxiosHeader);
+      } else {
+        const URL = `${baseURL}/users/register`;
+        response = await axios.post(URL, formData, AxiosHeader);
       }
+
+      if (response.status === 200 || response.status === 201) {
+        SuccessToast(response.data.message);
+        setTimeout(() => {
+          onCancel();
+        }, 1000);
+      }
+    } catch (error) {
+      ErrorToast(error.response?.data?.message || "An error occurred");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -104,150 +104,227 @@ export default function AddUser({ existingUser, onCancel }) {
     onCancel();
   };
 
+  const handleProfilePhotoChange = (event) => {
+    const file = event.currentTarget.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setLogoPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveProfilePhoto = () => {
+    profilePhotoRef.current.value = null;
+    setLogoPreview(null);
+  };
+
   return (
-    <section className="grid place-items-center h-screen">
-      <Dialog className="p-4" size="md" open={open}>
-        <ToastContainer />
-        <DialogHeader className="justify-between">
-          <h4 className="text-xl font-semibold mb-4">
-            {existingUser ? "Update User" : "Add User"}
-          </h4>
-        </DialogHeader>
-        <DialogBody className="overflow-auto">
-          {loading ? (
-            <Loader />
-          ) : (
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label
-                  className="block text-gray-700 font-medium mb-2"
-                  htmlFor="role"
-                >
-                  Role
-                </label>
-                <select
-                  ref={roleRef}
-                  id="role"
-                  name="role"
-                  defaultValue={existingUser ? existingUser.role : "user"}
-                  className="w-full px-4 py-2 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm border-gray-300"
-                >
-                  {roles.map((role) => (
-                    <option key={role._id} value={role._id}>
-                      {role.role_name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label
-                  className="block text-gray-700 font-medium mb-2"
-                  htmlFor="firstName"
-                >
-                  First Name
-                </label>
-                <input
-                  ref={firstNameRef}
-                  defaultValue={existingUser ? existingUser.first_name : ""}
-                  type="text"
-                  placeholder="First Name"
-                  className="w-full px-3 py-2 mb-4 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                />
-              </div>
-              <div>
-                <label
-                  className="block text-gray-700 font-medium mb-2"
-                  htmlFor="lastName"
-                >
-                  Last Name
-                </label>
-                <input
-                  ref={lastNameRef}
-                  defaultValue={existingUser ? existingUser.last_name : ""}
-                  type="text"
-                  placeholder="Last Name"
-                  className="w-full px-3 py-2 mb-4 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                />
-              </div>
-              <div>
-                <label
-                  className="block text-gray-700 font-medium mb-2"
-                  htmlFor="email"
-                >
-                  Email
-                </label>
-                <input
-                  ref={emailRef}
-                  defaultValue={existingUser ? existingUser.email : ""}
-                  type="email"
-                  placeholder="Email"
-                  className="w-full px-3 py-2 mb-4 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                />
-              </div>
-              <div>
-                <label
-                  className="block text-gray-700 font-medium mb-2"
-                  htmlFor="phone"
-                >
-                  Phone
-                </label>
-                <input
-                  ref={phoneRef}
-                  defaultValue={existingUser ? existingUser.phone : ""}
-                  type="tel"
-                  placeholder="Phone"
-                  className="w-full px-3 py-2 mb-4 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                />
-              </div>
-              <div>
-                <label
-                  className="block text-gray-700 font-medium mb-2"
-                  htmlFor="password"
-                >
-                  Password
-                </label>
-                <input
-                  ref={passwordRef}
-                  defaultValue={existingUser ? existingUser.password : ""}
-                  type="password"
-                  placeholder="Password"
-                  className="w-full px-3 py-2 mb-4 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                />
-              </div>
-              <div>
-                <label
-                  className="block text-gray-700 font-medium mb-2"
-                  htmlFor="profilePhoto"
-                >
-                  Profile Photo
-                </label>
-                <input
-                  ref={profilePhotoRef}
-                  type="file"
-                  accept="image/*"
-                  className="w-full px-3 py-2 mb-4 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                />
-              </div>
-            </div>
-          )}
-          {!loading && (
-            <div className="flex justify-between">
-              <button
-                onClick={handleSubmit}
-                className="py-2 px-4 text-white bg-indigo-600 hover:bg-indigo-700 rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+    <Dialog
+      size="md"
+      open={true}
+      handler={onCancel}
+      className="p-6 bg-white rounded-lg shadow-lg"
+    >
+      <ToastContainer />
+      <DialogHeader className="bg-gray-100 border-b border-gray-300">
+        <h4 className="text-xl font-semibold text-gray-800">
+          {existingUser ? "Update User" : "Add User"}
+        </h4>
+      </DialogHeader>
+      <DialogBody className="p-6">
+        {loading ? (
+          <Loader />
+        ) : (
+          <form
+            className="grid grid-cols-1 md:grid-cols-2 gap-6"
+            onSubmit={handleSubmit}
+          >
+            <div className="col-span-1">
+              <label
+                htmlFor="role"
+                className="block text-sm font-medium text-gray-700 mb-2"
               >
-                {existingUser ? "Update User" : "Add User"}
-              </button>
-              <button
+                Role
+              </label>
+              <select
+                ref={roleRef}
+                id="role"
+                name="role"
+                defaultValue={existingUser ? existingUser.role : "user"}
+                className={`w-full px-4 py-3 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${
+                  errors.role ? "border-red-500" : ""
+                }`}
+              >
+                <option value="">Select Role</option>
+                {roles.map((role) => (
+                  <option key={role._id} value={role._id}>
+                    {role.role_name}
+                  </option>
+                ))}
+              </select>
+              {errors.role && (
+                <p className="text-red-500 text-xs mt-1">{errors.role}</p>
+              )}
+            </div>
+
+            <div className="col-span-1">
+              <label
+                htmlFor="firstName"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                First Name
+              </label>
+              <input
+                ref={firstNameRef}
+                defaultValue={existingUser ? existingUser.first_name : ""}
+                type="text"
+                placeholder="First Name"
+                className={`w-full px-4 py-3 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${
+                  errors.first_name ? "border-red-500" : ""
+                }`}
+              />
+              {errors.first_name && (
+                <p className="text-red-500 text-xs mt-1">{errors.first_name}</p>
+              )}
+            </div>
+
+            <div className="col-span-1">
+              <label
+                htmlFor="lastName"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Last Name
+              </label>
+              <input
+                ref={lastNameRef}
+                defaultValue={existingUser ? existingUser.last_name : ""}
+                type="text"
+                placeholder="Last Name"
+                className={`w-full px-4 py-3 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${
+                  errors.last_name ? "border-red-500" : ""
+                }`}
+              />
+              {errors.last_name && (
+                <p className="text-red-500 text-xs mt-1">{errors.last_name}</p>
+              )}
+            </div>
+
+            <div className="col-span-1">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Email
+              </label>
+              <input
+                ref={emailRef}
+                defaultValue={existingUser ? existingUser.email : ""}
+                type="email"
+                placeholder="Email"
+                className={`w-full px-4 py-3 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${
+                  errors.email ? "border-red-500" : ""
+                }`}
+              />
+              {errors.email && (
+                <p className="text-red-500 text-xs mt-1">{errors.email}</p>
+              )}
+            </div>
+
+            <div className="col-span-1">
+              <label
+                htmlFor="phone"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Phone
+              </label>
+              <input
+                ref={phoneRef}
+                defaultValue={existingUser ? existingUser.phone : ""}
+                type="tel"
+                placeholder="Phone"
+                className={`w-full px-4 py-3 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${
+                  errors.phone ? "border-red-500" : ""
+                }`}
+              />
+              {errors.phone && (
+                <p className="text-red-500 text-xs mt-1">{errors.phone}</p>
+              )}
+            </div>
+
+            <div className="col-span-1">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Password
+              </label>
+              <input
+                ref={passwordRef}
+                defaultValue={existingUser ? existingUser.password : ""}
+                type="password"
+                placeholder="Password"
+                className={`w-full px-4 py-3 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${
+                  errors.password ? "border-red-500" : ""
+                }`}
+              />
+              {errors.password && (
+                <p className="text-red-500 text-xs mt-1">{errors.password}</p>
+              )}
+            </div>
+
+            <div className="col-span-1">
+              <label
+                htmlFor="profilePhoto"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Profile Photo
+              </label>
+              <input
+                ref={profilePhotoRef}
+                type="file"
+                accept="image/*"
+                onChange={handleProfilePhotoChange}
+                className="block w-full text-sm text-gray-500 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 transition-colors"
+              />
+              {logoPreview && (
+                <div className="relative mt-2">
+                  <img
+                    src={logoPreview}
+                    alt="Profile Preview"
+                    className="w-24 h-24 object-cover rounded-full"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleRemoveProfilePhoto}
+                    className="absolute top-0 right-0 p-1 bg-red-500 text-white rounded-full"
+                  >
+                    &times;
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div className="col-span-2 flex justify-end gap-4 mt-6">
+              <Button
+                type="submit"
+                className="py-2 px-4 text-white rounded-md shadow-sm transition-colors"
+                color="blue"
+              >
+                {existingUser ? "Update" : "Add"} User
+              </Button>
+              <Button
+                type="button"
                 onClick={handleCancel}
-                className="py-2 px-4 text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                className="py-2 px-4 text-white bg-gray-600 hover:bg-gray-700 rounded-md shadow-sm transition-colors"
               >
                 Cancel
-              </button>
+              </Button>
             </div>
-          )}
-        </DialogBody>
-      </Dialog>
-    </section>
+          </form>
+        )}
+      </DialogBody>
+    </Dialog>
   );
 }
