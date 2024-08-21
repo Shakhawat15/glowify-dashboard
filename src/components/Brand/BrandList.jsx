@@ -248,7 +248,7 @@ export default function BrandList() {
                                 onChange={() =>
                                   handleStatusChange(_id, is_active)
                                 }
-                                color="blue"
+                                color="green"
                               />
                               <span className="ml-2">
                                 {is_active ? "Active" : "Inactive"}

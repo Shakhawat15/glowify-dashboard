@@ -93,7 +93,7 @@ export default function CategoryList() {
     setLoading(true);
     try {
       const response = await axios.patch(
-        `${baseURL}/categories/update-status/${categoryId}`,
+        `${baseURL}/categories/status/${categoryId}`,
         { is_active: !currentStatus },
         AxiosHeader
       );
