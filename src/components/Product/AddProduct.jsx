@@ -40,6 +40,8 @@ export default function ProductForm() {
   );
   const [images, setImages] = useState(existingProduct?.media || []);
 
+  console.log("images", images);
+
   const navigate = useNavigate();
 
   useEffect(() => {
