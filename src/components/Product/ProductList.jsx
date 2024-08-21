@@ -174,6 +174,9 @@ export default function ProductList() {
                         quantity,
                         status,
                         _id,
+                        product_details,
+                        discount_type,
+                        discount_price,
                       },
                       index
                     ) => {
@@ -289,6 +292,10 @@ export default function ProductList() {
                                       rrp,
                                       quantity,
                                       status,
+                                      media,
+                                      product_details,
+                                      discount_type,
+                                      discount_price,
                                     })
                                   }
                                   variant="text"
