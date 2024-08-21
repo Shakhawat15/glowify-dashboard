@@ -190,6 +190,7 @@ export default function UserList() {
                         user_role_info,
                         status,
                         _id,
+                        role_id,
                       },
                       index
                     ) => {
@@ -293,6 +294,7 @@ export default function UserList() {
                                       email,
                                       user_role_info,
                                       status,
+                                      role_id,
                                     })
                                   }
                                   variant="text"

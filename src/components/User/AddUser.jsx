@@ -2,13 +2,12 @@ import {
   Dialog,
   DialogBody,
   DialogHeader,
-  Spinner,
   Button,
 } from "@material-tailwind/react";
 import axios from "axios";
 import { useEffect, useRef, useState } from "react";
 import { ToastContainer } from "react-toastify";
-import { AxiosHeader, baseURL } from "../../API/config";
+import { AxiosHeader, baseURL, imageBaseURL } from "../../API/config";
 import { ErrorToast, IsEmpty, SuccessToast } from "../../helper/FormHelper";
 import Loader from "../MasterLayout/Loader";
 
@@ -25,6 +24,7 @@ export default function AddUser({ existingUser, onCancel }) {
   const [loading, setLoading] = useState(false);
   const [logoPreview, setLogoPreview] = useState(null);
   const [errors, setErrors] = useState({});
+  const [selectedRole, setSelectedRole] = useState(""); // State for selected role
 
   useEffect(() => {
     const fetchRoles = async () => {
@@ -42,10 +42,19 @@ export default function AddUser({ existingUser, onCancel }) {
     fetchRoles();
   }, []);
 
+  useEffect(() => {
+    if (existingUser) {
+      setSelectedRole(existingUser.role_id || ""); // Set role based on existing user data
+      if (existingUser.photo_path) {
+        setLogoPreview(`${imageBaseURL}/${existingUser.photo_path}`);
+      }
+    }
+  }, [existingUser]);
+
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    const role = roleRef.current.value;
+    const role = selectedRole;
     const first_name = firstNameRef.current.value;
     const last_name = lastNameRef.current.value;
     const email = emailRef.current.value;
@@ -120,6 +129,10 @@ export default function AddUser({ existingUser, onCancel }) {
     setLogoPreview(null);
   };
 
+  const handleRoleChange = (event) => {
+    setSelectedRole(event.target.value);
+  };
+
   return (
     <Dialog
       size="md"
@@ -152,7 +165,8 @@ export default function AddUser({ existingUser, onCancel }) {
                 ref={roleRef}
                 id="role"
                 name="role"
-                defaultValue={existingUser ? existingUser.role : "user"}
+                value={selectedRole} // Controlled select input
+                onChange={handleRoleChange} // Handle changes
                 className={`w-full px-4 py-3 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${
                   errors.role ? "border-red-500" : ""
                 }`}
@@ -253,26 +267,27 @@ export default function AddUser({ existingUser, onCancel }) {
               )}
             </div>
 
-            <div className="col-span-1">
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
-                Password
-              </label>
-              <input
-                ref={passwordRef}
-                defaultValue={existingUser ? existingUser.password : ""}
-                type="password"
-                placeholder="Password"
-                className={`w-full px-4 py-3 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${
-                  errors.password ? "border-red-500" : ""
-                }`}
-              />
-              {errors.password && (
-                <p className="text-red-500 text-xs mt-1">{errors.password}</p>
-              )}
-            </div>
+            {!existingUser && (
+              <div className="col-span-1">
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  Password
+                </label>
+                <input
+                  ref={passwordRef}
+                  type="password"
+                  placeholder="Password"
+                  className={`w-full px-4 py-3 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${
+                    errors.password ? "border-red-500" : ""
+                  }`}
+                />
+                {errors.password && (
+                  <p className="text-red-500 text-xs mt-1">{errors.password}</p>
+                )}
+              </div>
+            )}
 
             <div className="col-span-1">
               <label
