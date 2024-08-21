@@ -22,6 +22,7 @@ import { useNavigate } from "react-router-dom";
 import { AxiosHeader, baseURL, imageBaseURL } from "../../API/config";
 import { ErrorToast, SuccessToast } from "../../helper/FormHelper";
 import Loader from "../MasterLayout/Loader";
+import { DeleteAlert } from "../../helper/DeleteAlert";
 
 // Define the default image URL
 const DEFAULT_IMAGE_URL = "https://via.placeholder.com/100?text=No+Image";
@@ -36,7 +37,7 @@ const TABLE_HEAD = [
   "Price",
   "Quantity",
   "Status",
-  "Action"
+  "Action",
 ];
 
 export default function ProductList() {
@@ -70,18 +71,10 @@ export default function ProductList() {
     navigate(`/product-create`, { state: { product } });
   };
 
-  const handleDeleteProduct = async (product) => {
-    setLoading(true);
-    try {
-      const response = await axios.delete(`${baseURL}/products/delete/${product._id}`, AxiosHeader);
-      if (response.status === 200) {
-        SuccessToast("Product deleted successfully");
-        setProducts(products.filter((p) => p._id !== product._id));
-      }
-    } catch (error) {
-      ErrorToast("Failed to delete product");
-    } finally {
-      setLoading(false);
+  const handleDeleteProduct = async (id) => {
+    const isDelete = await DeleteAlert(id, "products/delete");
+    if (isDelete) {
+      setProducts(products.filter((product) => product._id !== id));
     }
   };
 
@@ -109,7 +102,11 @@ export default function ProductList() {
         >
           <div className="mb-6 flex flex-col lg:flex-row items-center justify-between gap-6">
             <div>
-              <Typography variant="h5" color="blue-gray" className="font-semibold">
+              <Typography
+                variant="h5"
+                color="blue-gray"
+                className="font-semibold"
+              >
                 Product List
               </Typography>
               <Typography color="gray" className="mt-1 font-normal">
@@ -165,133 +162,156 @@ export default function ProductList() {
                   </tr>
                 </thead>
                 <tbody>
-                  {currentTableData.map(({ media, title, sku, category, brand, rrp, quantity, status, _id }, index) => {
-                    const isLast = index === currentTableData.length - 1;
-                    const classes = isLast
-                      ? "p-4"
-                      : "p-4 border-b border-gray-200";
-                    const serialNumber = (currentPage - 1) * itemsPerPage + index + 1;
+                  {currentTableData.map(
+                    (
+                      {
+                        media,
+                        title,
+                        sku,
+                        category,
+                        brand,
+                        rrp,
+                        quantity,
+                        status,
+                        _id,
+                      },
+                      index
+                    ) => {
+                      const isLast = index === currentTableData.length - 1;
+                      const classes = isLast
+                        ? "p-4"
+                        : "p-4 border-b border-gray-200";
+                      const serialNumber =
+                        (currentPage - 1) * itemsPerPage + index + 1;
 
-                    // Determine status text based on quantity
-                    const statusText = quantity > 0 ? "In Stock" : "Out of Stock";
+                      // Determine status text based on quantity
+                      const statusText =
+                        quantity > 0 ? "In Stock" : "Out of Stock";
 
-                    return (
-                      <tr key={_id}>
-                        <td className={classes}>
-                          <Typography
-                            variant="small"
-                            color="gray"
-                            className="font-normal"
-                          >
-                            {serialNumber}
-                          </Typography>
-                        </td>
-                        <td className={classes}>
-                          <img
-                            src={media[0]?.path ? `${imageBaseURL}/${media[0]?.path}` : DEFAULT_IMAGE_URL}
-                            alt={title}
-                            className="h-16 w-16 rounded-lg object-cover"
-                          />
-                        </td>
-                        <td className={classes}>
-                          <Typography
-                            variant="small"
-                            color="gray"
-                            className="font-normal"
-                          >
-                            {title}
-                          </Typography>
-                        </td>
-                        <td className={classes}>
-                          <Typography
-                            variant="small"
-                            color="gray"
-                            className="font-normal"
-                          >
-                            {sku}
-                          </Typography>
-                        </td>
-                        <td className={classes}>
-                          <Typography
-                            variant="small"
-                            color="gray"
-                            className="font-normal"
-                          >
-                            {category.name}
-                          </Typography>
-                        </td>
-                        <td className={classes}>
-                          <Typography
-                            variant="small"
-                            color="gray"
-                            className="font-normal"
-                          >
-                            {brand.name}
-                          </Typography>
-                        </td>
-                        <td className={classes}>
-                          <Typography
-                            variant="small"
-                            color="gray"
-                            className="font-normal"
-                          >
-                            {rrp}
-                          </Typography>
-                        </td>
-                        <td className={classes}>
-                          <Typography
-                            variant="small"
-                            color="gray"
-                            className="font-normal"
-                          >
-                            {quantity}
-                          </Typography>
-                        </td>
-                        <td className={classes}>
-                          <Typography
-                            variant="small"
-                            color="gray"
-                            className={`font-normal ${quantity > 0 ? 'text-green-600' : 'text-red-600'}`}
-                          >
-                            {statusText}
-                          </Typography>
-                        </td>
-                        <td className={classes}>
-                          <div className="flex gap-2">
-                            <Tooltip content="Edit Product">
-                              <IconButton
-                                onClick={() =>
-                                  handleEditProduct({
-                                    _id,
-                                    title,
-                                    sku,
-                                    category,
-                                    brand,
-                                    rrp,
-                                    quantity,
-                                    status
-                                  })
-                                }
-                                variant="text"
-                                color="blue"
-                              >
-                                <PencilIcon className="h-5 w-5" />
-                              </IconButton>
-                            </Tooltip>
-                            <Tooltip content="Delete Product">
-                              <IconButton
-                                onClick={() => handleDeleteProduct({ _id })}
-                                variant="text"
-                                color="red"
-                              >
-                                <TrashIcon className="h-5 w-5" />
-                              </IconButton>
-                            </Tooltip>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
+                      return (
+                        <tr key={_id}>
+                          <td className={classes}>
+                            <Typography
+                              variant="small"
+                              color="gray"
+                              className="font-normal"
+                            >
+                              {serialNumber}
+                            </Typography>
+                          </td>
+                          <td className={classes}>
+                            <img
+                              src={
+                                media[0]?.path
+                                  ? `${imageBaseURL}/${media[0]?.path}`
+                                  : DEFAULT_IMAGE_URL
+                              }
+                              alt={title}
+                              className="h-16 w-16 rounded-lg object-cover"
+                            />
+                          </td>
+                          <td className={classes}>
+                            <Typography
+                              variant="small"
+                              color="gray"
+                              className="font-normal"
+                            >
+                              {title}
+                            </Typography>
+                          </td>
+                          <td className={classes}>
+                            <Typography
+                              variant="small"
+                              color="gray"
+                              className="font-normal"
+                            >
+                              {sku}
+                            </Typography>
+                          </td>
+                          <td className={classes}>
+                            <Typography
+                              variant="small"
+                              color="gray"
+                              className="font-normal"
+                            >
+                              {category.name}
+                            </Typography>
+                          </td>
+                          <td className={classes}>
+                            <Typography
+                              variant="small"
+                              color="gray"
+                              className="font-normal"
+                            >
+                              {brand.name}
+                            </Typography>
+                          </td>
+                          <td className={classes}>
+                            <Typography
+                              variant="small"
+                              color="gray"
+                              className="font-normal"
+                            >
+                              {rrp}
+                            </Typography>
+                          </td>
+                          <td className={classes}>
+                            <Typography
+                              variant="small"
+                              color="gray"
+                              className="font-normal"
+                            >
+                              {quantity}
+                            </Typography>
+                          </td>
+                          <td className={classes}>
+                            <Typography
+                              variant="small"
+                              color="gray"
+                              className={`font-normal ${
+                                quantity > 0 ? "text-green-600" : "text-red-600"
+                              }`}
+                            >
+                              {statusText}
+                            </Typography>
+                          </td>
+                          <td className={classes}>
+                            <div className="flex gap-2">
+                              <Tooltip content="Edit Product">
+                                <IconButton
+                                  onClick={() =>
+                                    handleEditProduct({
+                                      _id,
+                                      title,
+                                      sku,
+                                      category,
+                                      brand,
+                                      rrp,
+                                      quantity,
+                                      status,
+                                    })
+                                  }
+                                  variant="text"
+                                  color="blue"
+                                >
+                                  <PencilIcon className="h-5 w-5" />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip content="Delete Product">
+                                <IconButton
+                                  onClick={() => handleDeleteProduct(_id)}
+                                  variant="text"
+                                  color="red"
+                                >
+                                  <TrashIcon className="h-5 w-5" />
+                                </IconButton>
+                              </Tooltip>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    }
+                  )}
                 </tbody>
               </table>
             </div>

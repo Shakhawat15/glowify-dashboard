@@ -19,7 +19,8 @@ import {
 import axios from "axios";
 import { Suspense, useEffect, useState } from "react";
 import { AxiosHeader, baseURL } from "../../API/config";
-import { ErrorToast, SuccessToast } from "../../helper/FormHelper";
+import { DeleteAlert } from "../../helper/DeleteAlert";
+import { ErrorToast } from "../../helper/FormHelper";
 import LazyLoader from "../MasterLayout/LazyLoader";
 import Loader from "../MasterLayout/Loader";
 import AddUserRole from "./AddUserRole";
@@ -69,15 +70,9 @@ export default function UserRoleList() {
   };
 
   const handleDeleteUserRole = async (id) => {
-    setLoading(true);
-    try {
-      await axios.delete(`${baseURL}/user-roles/delete/${id}`, AxiosHeader);
+    const isDeleted = await DeleteAlert(id, "user-roles/delete");
+    if (isDeleted) {
       setUserRoles(userRoles.filter((role) => role._id !== id));
-      SuccessToast("User Role deleted successfully");
-    } catch (error) {
-      ErrorToast("Failed to delete User Role");
-    } finally {
-      setLoading(false);
     }
   };
 

@@ -25,11 +25,20 @@ import { ErrorToast, SuccessToast } from "../../helper/FormHelper";
 import LazyLoader from "../MasterLayout/LazyLoader";
 import Loader from "../MasterLayout/Loader";
 import AddCategory from "./AddCategory";
+import { DeleteAlert } from "../../helper/DeleteAlert";
 
 // Define the default image URL
 const DEFAULT_IMAGE_URL = "https://via.placeholder.com/150?text=No+Image";
 
-const TABLE_HEAD = ["S.No", "Title", "Icon", "Image", "Create Date", "Status", "Action"];
+const TABLE_HEAD = [
+  "S.No",
+  "Title",
+  "Icon",
+  "Image",
+  "Create Date",
+  "Status",
+  "Action",
+];
 
 export default function CategoryList() {
   const [openModal, setOpenModal] = useState(false);
@@ -46,7 +55,10 @@ export default function CategoryList() {
   const fetchCategories = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`${baseURL}/categories/all`, AxiosHeader);
+      const response = await axios.get(
+        `${baseURL}/categories/all`,
+        AxiosHeader
+      );
       setCategories(response.data.data);
     } catch (error) {
       ErrorToast("Failed to fetch categories");
@@ -70,18 +82,10 @@ export default function CategoryList() {
     handleOpenModal(category);
   };
 
-  const handleDeleteCategory = async (category) => {
-    setLoading(true);
-    try {
-      const response = await axios.delete(`${baseURL}/categories/delete/${category._id}`, AxiosHeader);
-      if (response.status === 200) {
-        SuccessToast("Category deleted successfully");
-        setCategories(categories.filter((c) => c._id !== category._id));
-      }
-    } catch (error) {
-      ErrorToast("Failed to delete category");
-    } finally {
-      setLoading(false);
+  const handleDeleteCategory = async (id) => {
+    const isDelete = await DeleteAlert(id, "categories/delete");
+    if (isDelete) {
+      setCategories(categories.filter((category) => category._id !== id));
     }
   };
 
@@ -95,9 +99,13 @@ export default function CategoryList() {
       );
       if (response.status === 200) {
         SuccessToast("Category status updated successfully");
-        setCategories(categories.map((category) =>
-          category._id === categoryId ? { ...category, is_active: !currentStatus } : category
-        ));
+        setCategories(
+          categories.map((category) =>
+            category._id === categoryId
+              ? { ...category, is_active: !currentStatus }
+              : category
+          )
+        );
       }
     } catch (error) {
       ErrorToast("Failed to update category status");
@@ -130,7 +138,11 @@ export default function CategoryList() {
         >
           <div className="mb-6 flex flex-col lg:flex-row items-center justify-between gap-6">
             <div>
-              <Typography variant="h5" color="blue-gray" className="font-semibold">
+              <Typography
+                variant="h5"
+                color="blue-gray"
+                className="font-semibold"
+              >
                 Category List
               </Typography>
               <Typography color="gray" className="mt-1 font-normal">
@@ -186,88 +198,119 @@ export default function CategoryList() {
                   </tr>
                 </thead>
                 <tbody>
-                  {currentTableData.map(({ category_name, icon_path, image_path, createdAt, is_active, _id }, index) => {
-                    const isLast = index === currentTableData.length - 1;
-                    const classes = isLast
-                      ? "p-4"
-                      : "p-4 border-b border-gray-200";
-                    const serialNumber = (currentPage - 1) * itemsPerPage + index + 1;
+                  {currentTableData.map(
+                    (
+                      {
+                        category_name,
+                        icon_path,
+                        image_path,
+                        createdAt,
+                        is_active,
+                        _id,
+                      },
+                      index
+                    ) => {
+                      const isLast = index === currentTableData.length - 1;
+                      const classes = isLast
+                        ? "p-4"
+                        : "p-4 border-b border-gray-200";
+                      const serialNumber =
+                        (currentPage - 1) * itemsPerPage + index + 1;
 
-                    return (
-                      <tr key={_id}>
-                        <td className={classes}>
-                          <Typography
-                            variant="small"
-                            color="gray"
-                            className="font-normal"
-                          >
-                            {serialNumber}
-                          </Typography>
-                        </td>
-                        <td className={classes}>
-                          <Typography
-                            variant="small"
-                            color="gray"
-                            className="font-normal"
-                          >
-                            {category_name}
-                          </Typography>
-                        </td>
-                        <td className={classes}>
-                          <Avatar
-                            src={icon_path ? `${imageBaseURL}/${icon_path}` : DEFAULT_IMAGE_URL}
-                            alt={category_name}
-                            size="sm"
-                          />
-                        </td>
-                        <td className={classes}>
-                          <Avatar
-                            src={image_path ? `${imageBaseURL}/${image_path}` : DEFAULT_IMAGE_URL}
-                            alt={category_name}
-                            size="sm"
-                          />
-                        </td>
-                        <td className={classes}>
-                          <Typography
-                            variant="small"
-                            color="gray"
-                            className="font-normal"
-                          >
-                            {new Date(createdAt).toLocaleDateString()}
-                          </Typography>
-                        </td>
-                        <td className={classes}>
-                          <Switch
-                            checked={is_active}
-                            onChange={() => handleStatusChange(_id, is_active)}
-                            color={is_active ? "green" : "gray"}
-                          />
-                        </td>
-                        <td className={classes}>
-                          <div className="flex gap-2">
-                            <Tooltip content="Edit Category">
-                              <IconButton
-                                onClick={() => handleEditCategory({ _id, category_name, icon_path, image_path, is_active })}
-                                variant="text"
-                                color="blue"
-                              >
-                                <PencilIcon className="h-5 w-5" />
-                              </IconButton>
-                            </Tooltip>
-                            <Tooltip content="Delete Category">
-                              <IconButton
-                                onClick={() => handleDeleteCategory({ _id })}
-                                variant="text"
-                                color="red"
-                              >
-                                <TrashIcon className="h-5 w-5" />
-                              </IconButton>
-                            </Tooltip>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
+                      return (
+                        <tr key={_id}>
+                          <td className={classes}>
+                            <Typography
+                              variant="small"
+                              color="gray"
+                              className="font-normal"
+                            >
+                              {serialNumber}
+                            </Typography>
+                          </td>
+                          <td className={classes}>
+                            <Typography
+                              variant="small"
+                              color="gray"
+                              className="font-normal"
+                            >
+                              {category_name}
+                            </Typography>
+                          </td>
+                          <td className={classes}>
+                            <Avatar
+                              src={
+                                icon_path
+                                  ? `${imageBaseURL}/${icon_path}`
+                                  : DEFAULT_IMAGE_URL
+                              }
+                              alt={category_name}
+                              size="sm"
+                            />
+                          </td>
+                          <td className={classes}>
+                            <Avatar
+                              src={
+                                image_path
+                                  ? `${imageBaseURL}/${image_path}`
+                                  : DEFAULT_IMAGE_URL
+                              }
+                              alt={category_name}
+                              size="sm"
+                            />
+                          </td>
+                          <td className={classes}>
+                            <Typography
+                              variant="small"
+                              color="gray"
+                              className="font-normal"
+                            >
+                              {new Date(createdAt).toLocaleDateString()}
+                            </Typography>
+                          </td>
+                          <td className={classes}>
+                            <Switch
+                              checked={is_active}
+                              onChange={() =>
+                                handleStatusChange(_id, is_active)
+                              }
+                              color={is_active ? "green" : "gray"}
+                            />
+                          </td>
+                          <td className={classes}>
+                            <div className="flex gap-2">
+                              <Tooltip content="Edit Category">
+                                <IconButton
+                                  onClick={() =>
+                                    handleEditCategory({
+                                      _id,
+                                      category_name,
+                                      icon_path,
+                                      image_path,
+                                      is_active,
+                                    })
+                                  }
+                                  variant="text"
+                                  color="blue"
+                                >
+                                  <PencilIcon className="h-5 w-5" />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip content="Delete Category">
+                                <IconButton
+                                  onClick={() => handleDeleteCategory(_id)}
+                                  variant="text"
+                                  color="red"
+                                >
+                                  <TrashIcon className="h-5 w-5" />
+                                </IconButton>
+                              </Tooltip>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    }
+                  )}
                 </tbody>
               </table>
             </div>

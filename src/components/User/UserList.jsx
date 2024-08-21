@@ -24,6 +24,7 @@ import { ErrorToast, SuccessToast } from "../../helper/FormHelper";
 import LazyLoader from "../MasterLayout/LazyLoader";
 import Loader from "../MasterLayout/Loader";
 import AddUser from "./AddUser";
+import { DeleteAlert } from "../../helper/DeleteAlert";
 
 // Define the default image URL
 const DEFAULT_IMAGE_URL = "https://via.placeholder.com/150?text=No+Image";
@@ -78,20 +79,9 @@ export default function UserList() {
   };
 
   const handleDeleteUser = async (id) => {
-    setLoading(true);
-    try {
-      const response = await axios.delete(
-        `${baseURL}/users/delete/${id}`,
-        AxiosHeader
-      );
-      if (response.status === 200) {
-        SuccessToast("User deleted successfully");
-        setUsers(users.filter((u) => u._id !== id));
-      }
-    } catch (error) {
-      ErrorToast("Failed to delete user");
-    } finally {
-      setLoading(false);
+    const isDeleted = await DeleteAlert(id, "users/delete");
+    if (isDeleted) {
+      setUsers(users.filter((user) => user._id !== id));
     }
   };
 

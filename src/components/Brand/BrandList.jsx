@@ -24,11 +24,19 @@ import { ErrorToast, SuccessToast } from "../../helper/FormHelper";
 import LazyLoader from "../MasterLayout/LazyLoader";
 import Loader from "../MasterLayout/Loader";
 import AddBrand from "./AddBrand";
+import { DeleteAlert } from "../../helper/DeleteAlert";
 
 // Define the default image URL
 const DEFAULT_IMAGE_URL = "https://via.placeholder.com/150?text=No+Image";
 
-const TABLE_HEAD = ["S.No", "Brand Name", "Logo", "Create Date", "Status", "Action"];
+const TABLE_HEAD = [
+  "S.No",
+  "Brand Name",
+  "Logo",
+  "Create Date",
+  "Status",
+  "Action",
+];
 
 export default function BrandList() {
   const [openModal, setOpenModal] = useState(false);
@@ -70,17 +78,9 @@ export default function BrandList() {
   };
 
   const handleDeleteBrand = async (id) => {
-    setLoading(true);
-    try {
-      const response = await axios.delete(`${baseURL}/brands/delete/${id}`, AxiosHeader);
-      if (response.status === 200) {
-        SuccessToast("Brand deleted successfully");
-        setBrands(brands.filter((b) => b._id !== id));
-      }
-    } catch (error) {
-      ErrorToast("Failed to delete brand");
-    } finally {
-      setLoading(false);
+    const isDeleted = await DeleteAlert(id, "brands/delete");
+    if (isDeleted) {
+      setBrands(brands.filter((b) => b._id !== id));
     }
   };
 
@@ -94,7 +94,11 @@ export default function BrandList() {
       );
       if (response.status === 200) {
         SuccessToast("Brand status updated successfully");
-        setBrands(brands.map((b) => (b._id === id ? { ...b, is_active: !is_active } : b)));
+        setBrands(
+          brands.map((b) =>
+            b._id === id ? { ...b, is_active: !is_active } : b
+          )
+        );
       }
     } catch (error) {
       ErrorToast("Failed to update brand status");
@@ -127,7 +131,11 @@ export default function BrandList() {
         >
           <div className="mb-6 flex flex-col lg:flex-row items-center justify-between gap-6">
             <div>
-              <Typography variant="h5" color="blue-gray" className="font-semibold">
+              <Typography
+                variant="h5"
+                color="blue-gray"
+                className="font-semibold"
+              >
                 Brand List
               </Typography>
               <Typography color="gray" className="mt-1 font-normal">
@@ -183,83 +191,103 @@ export default function BrandList() {
                   </tr>
                 </thead>
                 <tbody>
-                  {currentTableData.map(({ brand_name, logo_path, createdAt, is_active, _id }, index) => {
-                    const isLast = index === currentTableData.length - 1;
-                    const classes = isLast
-                      ? "p-4"
-                      : "p-4 border-b border-gray-200";
+                  {currentTableData.map(
+                    (
+                      { brand_name, logo_path, createdAt, is_active, _id },
+                      index
+                    ) => {
+                      const isLast = index === currentTableData.length - 1;
+                      const classes = isLast
+                        ? "p-4"
+                        : "p-4 border-b border-gray-200";
 
-                    return (
-                      <tr key={_id} className="hover:bg-gray-50">
-                        <td className={classes}>
-                          <Typography
-                            variant="small"
-                            color="gray"
-                            className="font-normal"
-                          >
-                            {(currentPage - 1) * itemsPerPage + index + 1}
-                          </Typography>
-                        </td>
-                        <td className={classes}>
-                          <Typography
-                            variant="small"
-                            color="gray"
-                            className="font-normal"
-                          >
-                            {brand_name}
-                          </Typography>
-                        </td>
-                        <td className={classes}>
-                          <Avatar
-                            src={logo_path ? `${imageBaseURL}/${logo_path}` : DEFAULT_IMAGE_URL}
-                            alt={brand_name}
-                            size="sm"
-                          />
-                        </td>
-                        <td className={classes}>
-                          <Typography
-                            variant="small"
-                            color="gray"
-                            className="font-normal"
-                          >
-                            {new Date(createdAt).toLocaleDateString()}
-                          </Typography>
-                        </td>
-                        <td className={classes}>
-                          <div className="flex items-center">
-                            <Switch
-                              checked={is_active}
-                              onChange={() => handleStatusChange(_id, is_active)}
-                              color="blue"
+                      return (
+                        <tr key={_id} className="hover:bg-gray-50">
+                          <td className={classes}>
+                            <Typography
+                              variant="small"
+                              color="gray"
+                              className="font-normal"
+                            >
+                              {(currentPage - 1) * itemsPerPage + index + 1}
+                            </Typography>
+                          </td>
+                          <td className={classes}>
+                            <Typography
+                              variant="small"
+                              color="gray"
+                              className="font-normal"
+                            >
+                              {brand_name}
+                            </Typography>
+                          </td>
+                          <td className={classes}>
+                            <Avatar
+                              src={
+                                logo_path
+                                  ? `${imageBaseURL}/${logo_path}`
+                                  : DEFAULT_IMAGE_URL
+                              }
+                              alt={brand_name}
+                              size="sm"
                             />
-                            <span className="ml-2">{is_active ? "Active" : "Inactive"}</span>
-                          </div>
-                        </td>
-                        <td className={classes}>
-                          <div className="flex gap-2">
-                            <Tooltip content="Edit Brand">
-                              <IconButton
-                                onClick={() => handleEditBrand({ _id, brand_name, logo_path, is_active })}
-                                variant="text"
+                          </td>
+                          <td className={classes}>
+                            <Typography
+                              variant="small"
+                              color="gray"
+                              className="font-normal"
+                            >
+                              {new Date(createdAt).toLocaleDateString()}
+                            </Typography>
+                          </td>
+                          <td className={classes}>
+                            <div className="flex items-center">
+                              <Switch
+                                checked={is_active}
+                                onChange={() =>
+                                  handleStatusChange(_id, is_active)
+                                }
                                 color="blue"
-                              >
-                                <PencilIcon className="h-5 w-5" />
-                              </IconButton>
-                            </Tooltip>
-                            <Tooltip content="Delete Brand">
-                              <IconButton
-                                onClick={() => handleDeleteBrand(_id)}
-                                variant="text"
-                                color="red"
-                              >
-                                <TrashIcon className="h-5 w-5" />
-                              </IconButton>
-                            </Tooltip>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
+                              />
+                              <span className="ml-2">
+                                {is_active ? "Active" : "Inactive"}
+                              </span>
+                            </div>
+                          </td>
+                          <td className={classes}>
+                            <div className="flex gap-2">
+                              <Tooltip content="Edit Brand">
+                                <IconButton
+                                  onClick={() =>
+                                    handleEditBrand({
+                                      _id,
+                                      brand_name,
+                                      logo_path,
+                                      is_active,
+                                    })
+                                  }
+                                  variant="text"
+                                  color="blue"
+                                >
+                                  <PencilIcon className="h-5 w-5" />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip content="Delete Brand">
+                                <IconButton
+                                  onClick={() => handleDeleteBrand(_id)}
+                                  variant="text"
+                                  color="red"
+                                >
+                                  <TrashIcon className="h-5 w-5" />
+                                </IconButton>
+                              </Tooltip>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    }
+                  )}
                 </tbody>
               </table>
             </div>
@@ -293,10 +321,7 @@ export default function BrandList() {
       </Card>
       {openModal && (
         <Suspense fallback={<LazyLoader />}>
-          <AddBrand
-            onCancel={handleCloseModal}
-            existingBrand={selectedBrand}
-          />
+          <AddBrand onCancel={handleCloseModal} existingBrand={selectedBrand} />
         </Suspense>
       )}
     </>
