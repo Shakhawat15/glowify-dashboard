@@ -14,7 +14,7 @@ import {
   IconButton,
   Input,
   Tooltip,
-  Typography
+  Typography,
 } from "@material-tailwind/react";
 import axios from "axios";
 import { Suspense, useEffect, useState } from "react";
@@ -24,8 +24,7 @@ import LazyLoader from "../MasterLayout/LazyLoader";
 import Loader from "../MasterLayout/Loader";
 import AddUserRole from "./AddUserRole";
 
-const TABLE_HEAD = ["Role Name", "Status", "Create Date", "Action"];
-
+const TABLE_HEAD = ["S.No", "Role Name", "Status", "Create Date", "Action"];
 
 export default function UserRoleList() {
   const [openModal, setOpenModal] = useState(false);
@@ -36,15 +35,16 @@ export default function UserRoleList() {
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
   useEffect(() => {
-    
     fetchUserRoles();
   }, []);
 
   const fetchUserRoles = async () => {
     setLoading(true);
-
     try {
-      const response = await axios.get(`${baseURL}/user-roles/all`, AxiosHeader);
+      const response = await axios.get(
+        `${baseURL}/user-roles/all`,
+        AxiosHeader
+      );
       setUserRoles(response.data.data);
     } catch (error) {
       ErrorToast(error.response?.data?.message || "An error occurred");
@@ -52,7 +52,6 @@ export default function UserRoleList() {
       setLoading(false);
     }
   };
-
 
   const handleOpenModal = (userRole = null) => {
     setSelectedUserRole(userRole);
@@ -67,12 +66,19 @@ export default function UserRoleList() {
 
   const handleEditUserRole = (userRole) => {
     handleOpenModal(userRole);
-
   };
 
-  const handleDeleteUserRole = (userRole) => {
-    console.log(userRole);
-    // Implement the delete functionality
+  const handleDeleteUserRole = async (id) => {
+    setLoading(true);
+    try {
+      await axios.delete(`${baseURL}/user-roles/delete/${id}`, AxiosHeader);
+      setUserRoles(userRoles.filter((role) => role._id !== id));
+      SuccessToast("User Role deleted successfully");
+    } catch (error) {
+      ErrorToast("Failed to delete User Role");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const totalPages = Math.ceil(userRoles.length / itemsPerPage);
@@ -91,11 +97,19 @@ export default function UserRoleList() {
 
   return (
     <>
-      <Card className="h-full w-full">
-        <CardHeader floated={false} shadow={false} className="rounded-none">
-          <div className="mb-8 flex flex-col lg:flex-row items-center justify-between gap-8">
+      <Card className="w-full h-full">
+        <CardHeader
+          floated={false}
+          shadow={false}
+          className="rounded-none p-5 bg-gray-100 border-b border-gray-200"
+        >
+          <div className="mb-6 flex flex-col lg:flex-row items-center justify-between gap-6">
             <div>
-              <Typography variant="h5" color="blue-gray">
+              <Typography
+                variant="h5"
+                color="blue-gray"
+                className="font-semibold"
+              >
                 User Role List
               </Typography>
               <Typography color="gray" className="mt-1 font-normal">
@@ -103,7 +117,7 @@ export default function UserRoleList() {
               </Typography>
             </div>
             <div className="flex flex-col lg:flex-row items-center gap-4">
-              <div className="w-full lg:w-72">
+              <div className="w-full lg:w-80">
                 <Input
                   label="Search"
                   icon={<MagnifyingGlassIcon className="h-5 w-5" />}
@@ -113,109 +127,127 @@ export default function UserRoleList() {
                 onClick={() => handleOpenModal()}
                 className="flex items-center gap-3"
                 size="sm"
+                color="blue"
               >
                 <PlusIcon strokeWidth={2} className="h-4 w-4" /> Add Role
               </Button>
             </div>
           </div>
         </CardHeader>
-        <CardBody className="overflow-auto px-0 pt-0" style={{ maxHeight: "500px" }}>
+        <CardBody className="overflow-hidden px-0 pt-0">
           {loading ? (
             <Loader />
           ) : (
-            <table className="mt-4 w-full min-w-max table-auto text-left">
-              <thead className="sticky top-0 z-10 bg-white shadow-md">
-                <tr>
-                  {TABLE_HEAD.map((head, index) => (
-                    <th
-                      key={head}
-                      className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50"
-                    >
-                      <Typography
-                        variant="small"
-                        color="blue-gray"
-                        className="flex items-center justify-between gap-2 font-normal leading-none opacity-70"
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-max table-auto text-left border-separate border-spacing-0">
+                <thead className="bg-gray-200 border-b border-gray-300 sticky top-0 z-10">
+                  <tr>
+                    {TABLE_HEAD.map((head, index) => (
+                      <th
+                        key={head}
+                        className="p-4 border-b border-gray-300 bg-gray-100 text-gray-700 font-medium"
                       >
-                        {head}{" "}
-                        {index !== TABLE_HEAD.length - 1 && (
-                          <ChevronUpDownIcon
-                            strokeWidth={2}
-                            className="h-4 w-4"
-                          />
-                        )}
-                      </Typography>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {currentTableData.map(({ role_name, is_active, createdAt, _id }, index) => {
-                  const isLast = index === currentTableData.length - 1;
-                  const classes = isLast
-                    ? "p-4"
-                    : "p-4 border-b border-blue-gray-50";
+                        <Typography
+                          variant="small"
+                          color="gray"
+                          className="flex items-center justify-between gap-2 font-normal leading-none"
+                        >
+                          {head}{" "}
+                          {index !== TABLE_HEAD.length - 1 && (
+                            <ChevronUpDownIcon
+                              strokeWidth={2}
+                              className="h-4 w-4 text-gray-500"
+                            />
+                          )}
+                        </Typography>
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {currentTableData.map(
+                    ({ role_name, is_active, createdAt, _id }, index) => {
+                      const isLast = index === currentTableData.length - 1;
+                      const classes = isLast
+                        ? "p-4"
+                        : "p-4 border-b border-gray-200";
 
-                  return (
-                    <tr key={_id}>
-                      <td className={classes}>
-                        <div className="flex items-center gap-3">
-                          <div className="flex flex-col">
+                      return (
+                        <tr key={_id} className="hover:bg-gray-50">
+                          <td className={classes}>
                             <Typography
                               variant="small"
-                              color="blue-gray"
+                              color="gray"
+                              className="font-normal"
+                            >
+                              {(currentPage - 1) * itemsPerPage + index + 1}
+                            </Typography>
+                          </td>
+                          <td className={classes}>
+                            <Typography
+                              variant="small"
+                              color="gray"
                               className="font-normal"
                             >
                               {role_name}
                             </Typography>
-                          </div>
-                        </div>
-                      </td>
-                      <td className={classes}>
-                        <div className="w-max">
-                          <Chip
-                            variant="ghost"
-                            size="sm"
-                            value={is_active ? "Active" : "Inactive"}
-                            color={is_active ? "green" : "blue-gray"}
-                          />
-                        </div>
-                      </td>
-                      <td className={classes}>
-                        <Typography
-                          variant="small"
-                          color="blue-gray"
-                          className="font-normal"
-                        >
-                          {new Date(createdAt).toLocaleDateString()}
-                        </Typography>
-                      </td>
-                      <td className={classes}>
-                        <Tooltip content="Edit User Role">
-                          <IconButton
-                            onClick={() => handleEditUserRole({ _id, role_name, is_active })}
-                            variant="text"
-                          >
-                            <PencilIcon className="h-4 w-4" />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip content="Delete User Role">
-                          <IconButton
-                            onClick={() => handleDeleteUserRole({ _id })}
-                            variant="text"
-                          >
-                            <TrashIcon className="h-4 w-4" />
-                          </IconButton>
-                        </Tooltip>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                          </td>
+                          <td className={classes}>
+                            <Chip
+                              variant="ghost"
+                              size="sm"
+                              value={is_active ? "Active" : "Inactive"}
+                              color={is_active ? "green" : "blue-gray"}
+                            />
+                          </td>
+                          <td className={classes}>
+                            <Typography
+                              variant="small"
+                              color="gray"
+                              className="font-normal"
+                            >
+                              {new Date(createdAt).toLocaleDateString()}
+                            </Typography>
+                          </td>
+                          <td className={classes}>
+                            <div className="flex gap-2">
+                              <Tooltip content="Edit User Role">
+                                <IconButton
+                                  onClick={() =>
+                                    handleEditUserRole({
+                                      _id,
+                                      role_name,
+                                      is_active,
+                                    })
+                                  }
+                                  variant="text"
+                                  color="blue"
+                                >
+                                  <PencilIcon className="h-5 w-5" />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip content="Delete User Role">
+                                <IconButton
+                                  onClick={() => handleDeleteUserRole(_id)}
+                                  variant="text"
+                                  color="red"
+                                >
+                                  <TrashIcon className="h-5 w-5" />
+                                </IconButton>
+                              </Tooltip>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    }
+                  )}
+                </tbody>
+              </table>
+            </div>
           )}
         </CardBody>
-        <CardFooter className="flex items-center justify-between border-t border-blue-gray-50 p-4">
-          <Typography variant="small" color="blue-gray" className="font-normal">
+        <CardFooter className="flex items-center justify-between border-t border-gray-200 p-4">
+          <Typography variant="small" color="gray" className="font-normal">
             Page {currentPage} of {totalPages}
           </Typography>
           <div className="flex gap-2 items-center">
@@ -224,6 +256,7 @@ export default function UserRoleList() {
               size="sm"
               onClick={() => handlePageChange("prev")}
               disabled={currentPage === 1}
+              color="blue"
             >
               Previous
             </Button>
@@ -232,24 +265,15 @@ export default function UserRoleList() {
               size="sm"
               onClick={() => handlePageChange("next")}
               disabled={currentPage === totalPages}
+              color="blue"
             >
               Next
             </Button>
-            {/* <Select
-              label="Items per page"
-              value={itemsPerPage.toString()}
-              onChange={(e) => setItemsPerPage(parseInt(e.target.value))}
-              className="w-24"
-            >
-              <Option value="5">5</Option>
-              <Option value="10">10</Option>
-              <Option value="15">15</Option>
-            </Select> */}
           </div>
         </CardFooter>
       </Card>
       {openModal && (
-        <Suspense fallback={LazyLoader}>
+        <Suspense fallback={<LazyLoader />}>
           <AddUserRole
             onCancel={handleCloseModal}
             existingUserRole={selectedUserRole}
