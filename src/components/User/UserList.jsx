@@ -85,6 +85,30 @@ export default function UserList() {
     }
   };
 
+  const handleStatusToggle = async (userId, currentStatus) => {
+    try {
+      const newStatus = currentStatus === "active" ? "inactive" : "active";
+      const response = await axios.patch(
+        `${baseURL}/users/status/${userId}`,
+        { status: newStatus },
+        AxiosHeader
+      );
+      if (response.data.success) {
+        // Update the status locally
+        setUsers((prevUsers) =>
+          prevUsers.map((user) =>
+            user._id === userId ? { ...user, status: newStatus } : user
+          )
+        );
+        SuccessToast("User status updated successfully");
+      } else {
+        ErrorToast("Failed to update status");
+      }
+    } catch (error) {
+      ErrorToast("Failed to update status");
+    }
+  };
+
   const totalPages = Math.ceil(users.length / itemsPerPage);
   const handlePageChange = (direction) => {
     if (direction === "next" && currentPage < totalPages) {
@@ -267,9 +291,12 @@ export default function UserList() {
                                 color={
                                   status === "active" ? "green" : "blue-gray"
                                 }
+                                onClick={() => handleStatusToggle(_id, status)}
+                                className="cursor-pointer"
                               />
                             </div>
                           </td>
+
                           <td className={classes}>
                             <div className="flex gap-2">
                               <Tooltip content="Edit User">

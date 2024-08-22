@@ -90,75 +90,69 @@ export default function AddUserRole({ existingUserRole, onCancel }) {
         </h4>
       </DialogHeader>
       <DialogBody className="p-6">
-        {loading ? (
-          <Loader />
-        ) : (
-          <form onSubmit={formik.handleSubmit} className="space-y-6">
-            <div>
-              <label
-                htmlFor="name"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
-                Role Name
-              </label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                placeholder="Enter role name"
-                className={`w-full px-4 py-3 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${
-                  formik.touched.name && formik.errors.name
-                    ? "border-red-500"
-                    : "border-gray-300"
-                }`}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                value={formik.values.name}
-              />
-              {formik.touched.name && formik.errors.name ? (
-                <p className="mt-1 text-xs text-red-600">
-                  {formik.errors.name}
-                </p>
-              ) : null}
-            </div>
+        <form onSubmit={formik.handleSubmit} className="space-y-6">
+          <div>
+            <label
+              htmlFor="name"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Role Name
+            </label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              placeholder="Enter role name"
+              className={`w-full px-4 py-3 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${
+                formik.touched.name && formik.errors.name
+                  ? "border-red-500"
+                  : "border-gray-300"
+              }`}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              value={formik.values.name}
+            />
+            {formik.touched.name && formik.errors.name ? (
+              <p className="mt-1 text-xs text-red-600">{formik.errors.name}</p>
+            ) : null}
+          </div>
 
-            <div className="flex items-center">
-              <Switch
-                id="status"
-                checked={formik.values.status}
-                onChange={() =>
-                  formik.setFieldValue("status", !formik.values.status)
-                }
-                color="indigo"
-                label="Active"
-              />
-            </div>
+          <div className="flex items-center">
+            <Switch
+              id="status"
+              checked={formik.values.status}
+              onChange={() =>
+                formik.setFieldValue("status", !formik.values.status)
+              }
+              color="indigo"
+              label="Active"
+            />
+          </div>
 
-            <div className="flex gap-4">
-              <Button
-                type="submit"
-                className="py-2 px-4 text-white rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
-                disabled={loading}
-                color="blue"
-              >
-                {loading ? (
-                  <Spinner className="w-4 h-4" />
-                ) : existingUserRole ? (
-                  "Update User Role"
-                ) : (
-                  "Add User Role"
-                )}
-              </Button>
-              <Button
-                type="button"
-                onClick={onCancel}
-                className="py-2 px-4 text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors"
-              >
-                Cancel
-              </Button>
-            </div>
-          </form>
-        )}
+          <div className="flex gap-4">
+            <Button
+              type="submit"
+              className="py-2 px-4 text-white rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+              disabled={loading}
+              color="blue"
+            >
+              {loading ? (
+                <Spinner className="w-4 h-4" />
+              ) : existingUserRole ? (
+                "Update User Role"
+              ) : (
+                "Add User Role"
+              )}
+            </Button>
+            <Button
+              type="button"
+              onClick={onCancel}
+              className="py-2 px-4 text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors"
+            >
+              Cancel
+            </Button>
+          </div>
+        </form>
       </DialogBody>
     </Dialog>
   );
