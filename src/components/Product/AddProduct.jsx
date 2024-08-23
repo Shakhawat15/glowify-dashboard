@@ -155,6 +155,8 @@ export default function ProductForm() {
     }
   };
 
+  console.log("images", images);
+
   return (
     <Card className="bg-white shadow-lg rounded-lg">
       <CardBody className="p-6">
@@ -401,7 +403,11 @@ export default function ProductForm() {
             {images.map((image, index) => (
               <div key={index} className="relative">
                 <img
-                  src={`${imageBaseURL}/${image.path}`} // Adjust this path according to your media URL structure
+                  src={
+                    image instanceof File
+                      ? URL.createObjectURL(image)
+                      : `${imageBaseURL}/${image.path}`
+                  }
                   alt={`Product Preview ${index + 1}`}
                   className="w-60 h-60 object-cover rounded-md"
                 />
