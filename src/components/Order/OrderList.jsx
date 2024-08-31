@@ -1,312 +1,428 @@
 import {
   ChevronUpDownIcon,
   MagnifyingGlassIcon,
+  PlusIcon,
 } from "@heroicons/react/24/outline";
 import { PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
 import {
-  Avatar,
   Button,
   Card,
   CardBody,
   CardFooter,
   CardHeader,
+  Chip,
   IconButton,
   Input,
-  Tab,
-  Tabs,
-  TabsHeader,
   Tooltip,
   Typography,
 } from "@material-tailwind/react";
+import axios from "axios";
+import { useEffect, useState } from "react";
+import { AxiosHeader, baseURL } from "../../API/config";
+import { DeleteAlert } from "../../helper/DeleteAlert";
+import { ErrorToast, SuccessToast } from "../../helper/FormHelper";
+import Loader from "../MasterLayout/Loader";
 
-const TABS = [
-  {
-    label: "All",
-    value: "all",
-  },
-  {
-    label: "Monitored",
-    value: "monitored",
-  },
-  {
-    label: "Unmonitored",
-    value: "unmonitored",
-  },
-];
+// Define the default image URL
+const DEFAULT_IMAGE_URL = "https://via.placeholder.com/150?text=No+Image";
 
 const TABLE_HEAD = [
-  "User",
-  "Product",
-  "Quantity",
-  "Unit Price",
+  "S.No",
+  "Order ID",
+  "Customer",
   "Total Amount",
-  "SKU",
+  "Status",
+  "Date",
   "Action",
 ];
 
-const TABLE_ROWS = [
+const dummyOrders = [
   {
-    img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-3.jpg",
-    name: "John Michael",
-    email: "john@creative-tim.com",
-    product_name: "Vitamin C Serum",
-    category: "Fragrances",
-    quantity: 2,
-    unit_price: "100",
-    total_amount: "200",
-    sku: "SKU-123",
+    _id: "1",
+    order_id: "ORD001",
+    customer_name: "Alice Johnson",
+    total_amount: "$120.50",
+    status: "completed",
+    order_date: "2024-08-25",
   },
   {
-    img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-2.jpg",
-    name: "Alexa Liras",
-    email: "alexa@creative-tim.com",
-    product_name: "Hydrating Facial Cleanser",
-    category: "Skincare",
-    quantity: 3,
-    unit_price: "100",
-    total_amount: "200",
-    sku: "SKU-123",
+    _id: "2",
+    order_id: "ORD002",
+    customer_name: "Bob Smith",
+    total_amount: "$75.00",
+    status: "pending",
+    order_date: "2024-08-26",
   },
   {
-    img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-1.jpg",
-    name: "Laurent Perrier",
-    email: "laurent@creative-tim.com",
-    product_name: "Anti-Aging Night Cream",
-    category: "Makeup",
-    quantity: 4,
-    unit_price: "150",
-    total_amount: "200",
-    sku: "SKU-123",
+    _id: "3",
+    order_id: "ORD003",
+    customer_name: "Charlie Brown",
+    total_amount: "$200.00",
+    status: "completed",
+    order_date: "2024-08-27",
   },
   {
-    img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-4.jpg",
-    name: "Michael Levi",
-    email: "michael@creative-tim.com",
-    product_name: "Matte Liquid Foundation",
-    category: "Haircare",
-    quantity: 1,
-    unit_price: "240",
-    total_amount: "200",
-    sku: "SKU-123",
+    _id: "4",
+    order_id: "ORD004",
+    customer_name: "Diana Prince",
+    total_amount: "$95.75",
+    status: "pending",
+    order_date: "2024-08-28",
   },
   {
-    img: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-5.jpg",
-    name: "Richard Gran",
-    email: "richard@creative-tim.com",
-    product_name: "Volumizing Mascara",
-    category: "Fragrances",
-    quantity: 4,
-    unit_price: "100",
-    total_amount: "200",
-    sku: "SKU-123",
+    _id: "5",
+    order_id: "ORD005",
+    customer_name: "Ethan Hunt",
+    total_amount: "$150.00",
+    status: "completed",
+    order_date: "2024-08-29",
+  },
+  {
+    _id: "6",
+    order_id: "ORD006",
+    customer_name: "Fiona Gallagher",
+    total_amount: "$80.00",
+    status: "pending",
+    order_date: "2024-08-30",
+  },
+  {
+    _id: "7",
+    order_id: "ORD007",
+    customer_name: "George Michael",
+    total_amount: "$60.00",
+    status: "completed",
+    order_date: "2024-08-31",
+  },
+  {
+    _id: "8",
+    order_id: "ORD008",
+    customer_name: "Hannah Montana",
+    total_amount: "$110.00",
+    status: "pending",
+    order_date: "2024-09-01",
+  },
+  {
+    _id: "9",
+    order_id: "ORD009",
+    customer_name: "Ivy League",
+    total_amount: "$95.50",
+    status: "completed",
+    order_date: "2024-09-02",
+  },
+  {
+    _id: "10",
+    order_id: "ORD010",
+    customer_name: "Jack Bauer",
+    total_amount: "$130.00",
+    status: "pending",
+    order_date: "2024-09-03",
   },
 ];
-export default function OrderList() {
-  return (
-    <Card className="h-full w-full">
-      <CardHeader floated={false} shadow={false} className="rounded-none">
-        <div className="mb-8 flex items-center justify-between gap-8">
-          <div>
-            <Typography variant="h5" color="blue-gray">
-              Product Order list
-            </Typography>
-            <Typography color="gray" className="mt-1 font-normal">
-              See information about all orders
-            </Typography>
-          </div>
-          {/* <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
-            <Button variant="outlined" size="sm">
-              view all
-            </Button>
-            <Button className="flex items-center gap-3" size="sm">
-              <UserPlusIcon strokeWidth={2} className="h-4 w-4" /> Add User
-            </Button>
-          </div> */}
-        </div>
-        <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
-          <Tabs value="all" className="w-full md:w-max">
-            <TabsHeader>
-              {TABS.map(({ label, value }) => (
-                <Tab key={value} value={value}>
-                  &nbsp;&nbsp;{label}&nbsp;&nbsp;
-                </Tab>
-              ))}
-            </TabsHeader>
-          </Tabs>
-          <div className="w-full md:w-72">
-            <Input
-              label="Search"
-              icon={<MagnifyingGlassIcon className="h-5 w-5" />}
-            />
-          </div>
-        </div>
-      </CardHeader>
-      <CardBody className="overflow-scroll px-0">
-        <table className="mt-4 w-full min-w-max table-auto text-left">
-          <thead>
-            <tr>
-              {TABLE_HEAD.map((head, index) => (
-                <th
-                  key={head}
-                  className="cursor-pointer border-y border-blue-gray-100 bg-blue-gray-50/50 p-4 transition-colors hover:bg-blue-gray-50"
-                >
-                  <Typography
-                    variant="small"
-                    color="blue-gray"
-                    className="flex items-center justify-between gap-2 font-normal leading-none opacity-70"
-                  >
-                    {head}{" "}
-                    {index !== TABLE_HEAD.length - 1 && (
-                      <ChevronUpDownIcon strokeWidth={2} className="h-4 w-4" />
-                    )}
-                  </Typography>
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {TABLE_ROWS.map(
-              (
-                {
-                  img,
-                  name,
-                  email,
-                  product_name,
-                  category,
-                  unit_price,
-                  quantity,
-                  total_amount,
-                  sku,
-                },
-                index
-              ) => {
-                const isLast = index === TABLE_ROWS.length - 1;
-                const classes = isLast
-                  ? "p-4"
-                  : "p-4 border-b border-blue-gray-50";
 
-                return (
-                  <tr key={name}>
-                    <td className={classes}>
-                      <div className="flex items-center gap-3">
-                        <Avatar src={img} alt={name} size="sm" />
-                        <div className="flex flex-col">
-                          <Typography
-                            variant="small"
-                            color="blue-gray"
-                            className="font-normal"
-                          >
-                            {name}
-                          </Typography>
-                          <Typography
-                            variant="small"
-                            color="blue-gray"
-                            className="font-normal opacity-70"
-                          >
-                            {email}
-                          </Typography>
-                        </div>
-                      </div>
-                    </td>
-                    <td className={classes}>
-                      <div className="flex items-center gap-3">
-                        <Avatar src={img} alt={product_name} size="sm" />
-                        <div className="flex flex-col">
-                          <Typography
-                            variant="small"
-                            color="blue-gray"
-                            className="font-normal"
-                          >
-                            {product_name}
-                          </Typography>
-                          <Typography
-                            variant="small"
-                            color="blue-gray"
-                            className="font-normal opacity-70"
-                          >
-                            {category}
-                          </Typography>
-                        </div>
-                      </div>
-                    </td>
-                    <td className={classes}>
-                      <Typography
-                        variant="small"
-                        color="blue-gray"
-                        className="font-normal"
+export default function OrderList() {
+  const [openModal, setOpenModal] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [orders, setOrders] = useState(dummyOrders);
+  const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(7);
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  const fetchOrders = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(`${baseURL}/orders/all`, AxiosHeader);
+      setOrders(response.data.data);
+    } catch (error) {
+      ErrorToast("Failed to fetch orders");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleOpenModal = (order = null) => {
+    setSelectedOrder(order);
+    setOpenModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setOpenModal(false);
+    setSelectedOrder(null);
+    fetchOrders();
+  };
+
+  const handleEditOrder = (order) => {
+    handleOpenModal(order);
+  };
+
+  const handleDeleteOrder = async (id) => {
+    const isDeleted = await DeleteAlert(id, "orders/delete");
+    if (isDeleted) {
+      setOrders(orders.filter((order) => order._id !== id));
+    }
+  };
+
+  const handleStatusToggle = async (orderId, currentStatus) => {
+    try {
+      const newStatus = currentStatus === "completed" ? "pending" : "completed";
+      const response = await axios.patch(
+        `${baseURL}/orders/status/${orderId}`,
+        { status: newStatus },
+        AxiosHeader
+      );
+      if (response.data.success) {
+        // Update the status locally
+        setOrders((prevOrders) =>
+          prevOrders.map((order) =>
+            order._id === orderId ? { ...order, status: newStatus } : order
+          )
+        );
+        SuccessToast("Order status updated successfully");
+      } else {
+        ErrorToast("Failed to update status");
+      }
+    } catch (error) {
+      ErrorToast("Failed to update status");
+    }
+  };
+
+  const totalPages = Math.ceil(orders.length / itemsPerPage);
+  const handlePageChange = (direction) => {
+    if (direction === "next" && currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    } else if (direction === "prev" && currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const currentTableData = orders.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  return (
+    <>
+      <Card className="w-full h-full">
+        <CardHeader
+          floated={false}
+          shadow={false}
+          className="rounded-none p-5 bg-gray-100 border-b border-gray-200"
+        >
+          <div className="mb-6 flex flex-col lg:flex-row items-center justify-between gap-6">
+            <div>
+              <Typography
+                variant="h5"
+                color="blue-gray"
+                className="font-semibold"
+              >
+                Order List
+              </Typography>
+              <Typography color="gray" className="mt-1 font-normal">
+                See information about all orders
+              </Typography>
+            </div>
+            <div className="flex flex-col lg:flex-row items-center gap-4">
+              <div className="w-full lg:w-80">
+                <Input
+                  label="Search"
+                  icon={<MagnifyingGlassIcon className="h-5 w-5" />}
+                />
+              </div>
+              <Button
+                onClick={() => handleOpenModal()}
+                className="flex items-center gap-3"
+                size="sm"
+                color="blue"
+              >
+                <PlusIcon strokeWidth={2} className="h-4 w-4" /> Add Order
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardBody className="overflow-hidden px-0 pt-0">
+          {loading ? (
+            <Loader />
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-max table-auto text-left border-separate border-spacing-0">
+                <thead className="bg-gray-200 border-b border-gray-300 sticky top-0 z-10">
+                  <tr>
+                    {TABLE_HEAD.map((head, index) => (
+                      <th
+                        key={head}
+                        className="p-4 border-b border-gray-300 bg-gray-100 text-gray-700 font-medium"
                       >
-                        {quantity}
-                      </Typography>
-                    </td>
-                    {/* <td className={classes}>
-                      <div className="w-max">
-                        <Chip
-                          variant="ghost"
-                          size="sm"
-                          value={online ? "online" : "offline"}
-                          color={online ? "green" : "blue-gray"}
-                        />
-                      </div>
-                    </td> */}
-                    <td className={classes}>
-                      <Typography
-                        variant="small"
-                        color="blue-gray"
-                        className="font-normal"
-                      >
-                        {unit_price}
-                      </Typography>
-                    </td>
-                    <td className={classes}>
-                      <Typography
-                        variant="small"
-                        color="blue-gray"
-                        className="font-normal"
-                      >
-                        {total_amount}
-                      </Typography>
-                    </td>
-                    <td className={classes}>
-                      <Typography
-                        variant="small"
-                        color="blue-gray"
-                        className="font-normal"
-                      >
-                        {sku}
-                      </Typography>
-                    </td>
-                    <td className={classes}>
-                      <Tooltip content="Edit Order">
-                        <IconButton variant="text">
-                          <PencilIcon className="h-4 w-4" />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip content="Delete Order">
-                        <IconButton variant="text">
-                          <TrashIcon className="h-4 w-4" />
-                        </IconButton>
-                      </Tooltip>
-                    </td>
+                        <Typography
+                          variant="small"
+                          color="gray"
+                          className="flex items-center justify-between gap-2 font-normal leading-none"
+                        >
+                          {head}{" "}
+                          {index !== TABLE_HEAD.length - 1 && (
+                            <ChevronUpDownIcon
+                              strokeWidth={2}
+                              className="h-4 w-4 text-gray-500"
+                            />
+                          )}
+                        </Typography>
+                      </th>
+                    ))}
                   </tr>
-                );
-              }
-            )}
-          </tbody>
-        </table>
-      </CardBody>
-      <CardFooter className="flex items-center justify-between border-t border-blue-gray-50 p-4">
-        <Typography variant="small" color="blue-gray" className="font-normal">
-          Page 1 of 10
-        </Typography>
-        <div className="flex gap-2">
-          <Button variant="outlined" size="sm">
-            Previous
-          </Button>
-          <Button variant="outlined" size="sm">
-            Next
-          </Button>
-        </div>
-      </CardFooter>
-    </Card>
+                </thead>
+                <tbody>
+                  {currentTableData.map(
+                    (
+                      {
+                        _id,
+                        order_id,
+                        customer_name,
+                        total_amount,
+                        status,
+                        order_date,
+                      },
+                      index
+                    ) => {
+                      const isLast = index === currentTableData.length - 1;
+                      const classes = isLast
+                        ? "p-4"
+                        : "p-4 border-b border-gray-200";
+
+                      return (
+                        <tr key={_id} className="hover:bg-gray-50">
+                          <td className={classes}>
+                            <Typography
+                              variant="small"
+                              color="gray"
+                              className="font-normal"
+                            >
+                              {(currentPage - 1) * itemsPerPage + index + 1}
+                            </Typography>
+                          </td>
+                          <td className={classes}>
+                            <Typography
+                              variant="small"
+                              color="gray"
+                              className="font-normal"
+                            >
+                              {order_id}
+                            </Typography>
+                          </td>
+                          <td className={classes}>
+                            <Typography
+                              variant="small"
+                              color="gray"
+                              className="font-normal"
+                            >
+                              {customer_name}
+                            </Typography>
+                          </td>
+                          <td className={classes}>
+                            <Typography
+                              variant="small"
+                              color="gray"
+                              className="font-normal"
+                            >
+                              {total_amount}
+                            </Typography>
+                          </td>
+                          <td className={classes}>
+                            <div className="w-max">
+                              <Chip
+                                variant="ghost"
+                                size="sm"
+                                value={
+                                  status === "completed"
+                                    ? "Completed"
+                                    : "Pending"
+                                }
+                                color={
+                                  status === "completed" ? "green" : "blue-gray"
+                                }
+                                onClick={() => handleStatusToggle(_id, status)}
+                                className="cursor-pointer"
+                              />
+                            </div>
+                          </td>
+                          <td className={classes}>
+                            <Typography
+                              variant="small"
+                              color="gray"
+                              className="font-normal"
+                            >
+                              {order_date}
+                            </Typography>
+                          </td>
+                          <td className={classes}>
+                            <div className="flex gap-2">
+                              <Tooltip content="Edit Order">
+                                <IconButton
+                                  onClick={() =>
+                                    handleEditOrder({
+                                      _id,
+                                      order_id,
+                                      customer_name,
+                                      total_amount,
+                                      status,
+                                      order_date,
+                                    })
+                                  }
+                                  variant="text"
+                                  color="blue"
+                                >
+                                  <PencilIcon className="h-5 w-5" />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip content="Delete Order">
+                                <IconButton
+                                  onClick={() => handleDeleteOrder(_id)}
+                                  variant="text"
+                                  color="red"
+                                >
+                                  <TrashIcon className="h-5 w-5" />
+                                </IconButton>
+                              </Tooltip>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    }
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardBody>
+        <CardFooter className="flex items-center justify-between border-t border-gray-200 p-4">
+          <Typography variant="small" color="gray" className="font-normal">
+            Page {currentPage} of {totalPages}
+          </Typography>
+          <div className="flex gap-2 items-center">
+            <Button
+              variant="outlined"
+              size="sm"
+              onClick={() => handlePageChange("prev")}
+              disabled={currentPage === 1}
+              color="blue"
+            >
+              Previous
+            </Button>
+            <Button
+              variant="outlined"
+              size="sm"
+              onClick={() => handlePageChange("next")}
+              disabled={currentPage === totalPages}
+              color="blue"
+            >
+              Next
+            </Button>
+          </div>
+        </CardFooter>
+      </Card>
+
+      {/* Add/Edit Order Modal */}
+    </>
   );
 }
