@@ -234,6 +234,23 @@ export default function MasterLayout({ children }) {
                 Orders
               </Typography>
             </NavLink>
+            <NavLink
+              className={({ isActive }) =>
+                `flex items-center p-2 rounded-md mt-2 transition-colors ${
+                  isActive
+                    ? "bg-blue-gray-100 text-blue-500"
+                    : "hover:bg-blue-gray-50"
+                }`
+              }
+              to="/blogs"
+            >
+              <ListItemPrefix>
+                <InboxIcon className="h-5 w-5" />
+              </ListItemPrefix>
+              <Typography color="blue-gray" className="mr-auto font-normal">
+                Blogs
+              </Typography>
+            </NavLink>
             <Accordion
               open={open === 7}
               icon={

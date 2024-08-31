@@ -12,6 +12,7 @@ import OrderList from "./pages/Order/OrderPage";
 import ProductCreate from "./pages/Product/AddProductPage";
 import ProductList from "./pages/Product/ProductPage";
 import UserList from "./pages/User/UserPage";
+import BlogList from "./pages/Blog/BlogPage";
 import UserRoleList from "./pages/UserRole/UserRolePage";
 import HeaderSettingPage from "./pages/Setting/HeaderSettingPage";
 import FooterSettingPage from "./pages/Setting/FooterSettingPage";
@@ -20,7 +21,7 @@ import Login from "./pages/Login/LoginPage";
 import { getToken } from "./helper/SessionHelper";
 
 function App() {
-  if(getToken()){
+  if (getToken()) {
     return (
       <Fragment>
         <BrowserRouter>
@@ -33,6 +34,7 @@ function App() {
             <Route path="/products" element={<ProductList />} />
             <Route path="/product-create" element={<ProductCreate />} />
             <Route path="/orders" element={<OrderList />} />
+            <Route path="/blogs" element={<BlogList />} />
             <Route path="/header-setting" element={<HeaderSettingPage />} />
             <Route path="/footer-setting" element={<FooterSettingPage />} />
             <Route path="/create-menu" element={<MenuPage />} />
@@ -48,7 +50,7 @@ function App() {
       <Fragment>
         <BrowserRouter>
           <Routes>
-          <Route path="/" element={<Navigate to="/login" replace />} />
+            <Route path="/" element={<Navigate to="/login" replace />} />
             <Route path="/login" element={<Login />} />
             <Route path="*" element={<Login />} />
           </Routes>
@@ -58,7 +60,6 @@ function App() {
       </Fragment>
     );
   }
-  
 }
 
 export default App;
