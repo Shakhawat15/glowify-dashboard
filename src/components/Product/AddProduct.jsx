@@ -40,7 +40,15 @@ export default function ProductForm() {
   );
   const [images, setImages] = useState(existingProduct?.media || []);
 
-  console.log("images", images);
+  // console.log("images", existingProduct?.media);
+
+  let existingImages = [];
+
+  images.map((image) => {
+    if (!(image instanceof File)) {
+      existingImages.push(image.path);
+    }
+  });
 
   const navigate = useNavigate();
 
@@ -126,6 +134,7 @@ export default function ProductForm() {
       formData.append("discount_type", discountType);
       formData.append("discount_price", discountPrice);
       formData.append("attributes", JSON.stringify(attributes));
+      formData.append("existingImages", JSON.stringify(existingImages));
 
       images.forEach((image) => {
         formData.append("images", image);

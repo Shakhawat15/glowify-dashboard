@@ -3,7 +3,7 @@ import {
   MagnifyingGlassIcon,
   PlusIcon,
 } from "@heroicons/react/24/outline";
-import { PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
+import { PencilIcon, TrashIcon, EyeIcon } from "@heroicons/react/24/solid"; // Import EyeIcon for the view button
 import {
   Button,
   Card,
@@ -22,6 +22,8 @@ import { AxiosHeader, baseURL } from "../../API/config";
 import { DeleteAlert } from "../../helper/DeleteAlert";
 import { ErrorToast, SuccessToast } from "../../helper/FormHelper";
 import Loader from "../MasterLayout/Loader";
+import OrderDetailsModal from "./OrderDetailsModal"; // Import the OrderDetailsModal component
+import dummyOrders from "./order";
 
 // Define the default image URL
 const DEFAULT_IMAGE_URL = "https://via.placeholder.com/150?text=No+Image";
@@ -36,91 +38,9 @@ const TABLE_HEAD = [
   "Action",
 ];
 
-const dummyOrders = [
-  {
-    _id: "1",
-    order_id: "ORD001",
-    customer_name: "Alice Johnson",
-    total_amount: "$120.50",
-    status: "completed",
-    order_date: "2024-08-25",
-  },
-  {
-    _id: "2",
-    order_id: "ORD002",
-    customer_name: "Bob Smith",
-    total_amount: "$75.00",
-    status: "pending",
-    order_date: "2024-08-26",
-  },
-  {
-    _id: "3",
-    order_id: "ORD003",
-    customer_name: "Charlie Brown",
-    total_amount: "$200.00",
-    status: "completed",
-    order_date: "2024-08-27",
-  },
-  {
-    _id: "4",
-    order_id: "ORD004",
-    customer_name: "Diana Prince",
-    total_amount: "$95.75",
-    status: "pending",
-    order_date: "2024-08-28",
-  },
-  {
-    _id: "5",
-    order_id: "ORD005",
-    customer_name: "Ethan Hunt",
-    total_amount: "$150.00",
-    status: "completed",
-    order_date: "2024-08-29",
-  },
-  {
-    _id: "6",
-    order_id: "ORD006",
-    customer_name: "Fiona Gallagher",
-    total_amount: "$80.00",
-    status: "pending",
-    order_date: "2024-08-30",
-  },
-  {
-    _id: "7",
-    order_id: "ORD007",
-    customer_name: "George Michael",
-    total_amount: "$60.00",
-    status: "completed",
-    order_date: "2024-08-31",
-  },
-  {
-    _id: "8",
-    order_id: "ORD008",
-    customer_name: "Hannah Montana",
-    total_amount: "$110.00",
-    status: "pending",
-    order_date: "2024-09-01",
-  },
-  {
-    _id: "9",
-    order_id: "ORD009",
-    customer_name: "Ivy League",
-    total_amount: "$95.50",
-    status: "completed",
-    order_date: "2024-09-02",
-  },
-  {
-    _id: "10",
-    order_id: "ORD010",
-    customer_name: "Jack Bauer",
-    total_amount: "$130.00",
-    status: "pending",
-    order_date: "2024-09-03",
-  },
-];
-
 export default function OrderList() {
   const [openModal, setOpenModal] = useState(false);
+  const [openDetailsModal, setOpenDetailsModal] = useState(false); // State for details modal
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [orders, setOrders] = useState(dummyOrders);
   const [loading, setLoading] = useState(true);
@@ -187,6 +107,16 @@ export default function OrderList() {
     } catch (error) {
       ErrorToast("Failed to update status");
     }
+  };
+
+  const handleViewDetails = (order) => {
+    setSelectedOrder(order);
+    setOpenDetailsModal(true); // Open the details modal
+  };
+
+  const handleCloseDetailsModal = () => {
+    setOpenDetailsModal(false);
+    setSelectedOrder(null);
   };
 
   const totalPages = Math.ceil(orders.length / itemsPerPage);
@@ -282,6 +212,7 @@ export default function OrderList() {
                         total_amount,
                         status,
                         order_date,
+                        products,
                       },
                       index
                     ) => {
@@ -295,16 +226,16 @@ export default function OrderList() {
                           <td className={classes}>
                             <Typography
                               variant="small"
-                              color="gray"
+                              color="blue-gray"
                               className="font-normal"
                             >
-                              {(currentPage - 1) * itemsPerPage + index + 1}
+                              {index + 1 + (currentPage - 1) * itemsPerPage}
                             </Typography>
                           </td>
                           <td className={classes}>
                             <Typography
                               variant="small"
-                              color="gray"
+                              color="blue-gray"
                               className="font-normal"
                             >
                               {order_id}
@@ -313,7 +244,7 @@ export default function OrderList() {
                           <td className={classes}>
                             <Typography
                               variant="small"
-                              color="gray"
+                              color="blue-gray"
                               className="font-normal"
                             >
                               {customer_name}
@@ -322,66 +253,66 @@ export default function OrderList() {
                           <td className={classes}>
                             <Typography
                               variant="small"
-                              color="gray"
+                              color="blue-gray"
                               className="font-normal"
                             >
                               {total_amount}
                             </Typography>
                           </td>
                           <td className={classes}>
-                            <div className="w-max">
-                              <Chip
-                                variant="ghost"
-                                size="sm"
-                                value={
-                                  status === "completed"
-                                    ? "Completed"
-                                    : "Pending"
-                                }
-                                color={
-                                  status === "completed" ? "green" : "blue-gray"
-                                }
-                                onClick={() => handleStatusToggle(_id, status)}
-                                className="cursor-pointer"
-                              />
-                            </div>
+                            <Chip
+                              variant="ghost"
+                              size="sm"
+                              value={
+                                status === "completed" ? "Completed" : "Pending"
+                              }
+                              color={
+                                status === "completed" ? "green" : "blue-gray"
+                              }
+                              className="text-center text-xs font-normal"
+                              onClick={() => handleStatusToggle(_id, status)}
+                            />
                           </td>
                           <td className={classes}>
                             <Typography
                               variant="small"
-                              color="gray"
+                              color="blue-gray"
                               className="font-normal"
                             >
                               {order_date}
                             </Typography>
                           </td>
                           <td className={classes}>
-                            <div className="flex gap-2">
+                            <div className="flex items-center gap-2">
                               <Tooltip content="Edit Order">
                                 <IconButton
-                                  onClick={() =>
-                                    handleEditOrder({
-                                      _id,
-                                      order_id,
-                                      customer_name,
-                                      total_amount,
-                                      status,
-                                      order_date,
-                                    })
-                                  }
                                   variant="text"
-                                  color="blue"
+                                  color="blue-gray"
+                                  onClick={() =>
+                                    handleEditOrder(currentTableData[index])
+                                  }
                                 >
-                                  <PencilIcon className="h-5 w-5" />
+                                  <PencilIcon className="h-4 w-4" />
                                 </IconButton>
                               </Tooltip>
                               <Tooltip content="Delete Order">
                                 <IconButton
-                                  onClick={() => handleDeleteOrder(_id)}
                                   variant="text"
                                   color="red"
+                                  onClick={() => handleDeleteOrder(_id)}
                                 >
-                                  <TrashIcon className="h-5 w-5" />
+                                  <TrashIcon className="h-4 w-4" />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip content="View Details">
+                                <IconButton
+                                  variant="text"
+                                  color="blue-gray"
+                                  onClick={() =>
+                                    handleViewDetails(currentTableData[index])
+                                  }
+                                >
+                                  <EyeIcon className="h-4 w-4" />
                                 </IconButton>
                               </Tooltip>
                             </div>
@@ -396,33 +327,32 @@ export default function OrderList() {
           )}
         </CardBody>
         <CardFooter className="flex items-center justify-between border-t border-gray-200 p-4">
-          <Typography variant="small" color="gray" className="font-normal">
+          <Button
+            variant="text"
+            color="blue-gray"
+            onClick={() => handlePageChange("prev")}
+            disabled={currentPage === 1}
+          >
+            Previous
+          </Button>
+          <Typography color="blue-gray" className="text-sm font-normal">
             Page {currentPage} of {totalPages}
           </Typography>
-          <div className="flex gap-2 items-center">
-            <Button
-              variant="outlined"
-              size="sm"
-              onClick={() => handlePageChange("prev")}
-              disabled={currentPage === 1}
-              color="blue"
-            >
-              Previous
-            </Button>
-            <Button
-              variant="outlined"
-              size="sm"
-              onClick={() => handlePageChange("next")}
-              disabled={currentPage === totalPages}
-              color="blue"
-            >
-              Next
-            </Button>
-          </div>
+          <Button
+            variant="text"
+            color="blue-gray"
+            onClick={() => handlePageChange("next")}
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </Button>
         </CardFooter>
       </Card>
-
-      {/* Add/Edit Order Modal */}
+      <OrderDetailsModal
+        open={openDetailsModal}
+        handleClose={handleCloseDetailsModal}
+        order={selectedOrder}
+      />
     </>
   );
 }

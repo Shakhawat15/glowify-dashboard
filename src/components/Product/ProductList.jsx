@@ -14,15 +14,14 @@ import {
   Input,
   Tooltip,
   Typography,
-  Chip,
 } from "@material-tailwind/react";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AxiosHeader, baseURL, imageBaseURL } from "../../API/config";
-import { ErrorToast, SuccessToast } from "../../helper/FormHelper";
-import Loader from "../MasterLayout/Loader";
 import { DeleteAlert } from "../../helper/DeleteAlert";
+import { ErrorToast } from "../../helper/FormHelper";
+import Loader from "../MasterLayout/Loader";
 
 // Define the default image URL
 const DEFAULT_IMAGE_URL = "https://via.placeholder.com/100?text=No+Image";
