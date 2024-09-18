@@ -56,7 +56,6 @@ const Login = () => {
               type="email"
               id="email"
               name="email"
-              defaultValue="shsourov2000@gmail.com"
               required
               className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-400 transition duration-300"
               placeholder="you@example.com"
@@ -74,7 +73,6 @@ const Login = () => {
               type="password"
               id="password"
               name="password"
-              defaultValue="12345"
               required
               className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-400 transition duration-300"
               placeholder="********"

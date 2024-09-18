@@ -4,7 +4,6 @@ import {
   BriefcaseIcon,
   DocumentDuplicateIcon,
   InboxIcon,
-  PowerIcon,
   PresentationChartBarIcon,
   ShoppingBagIcon,
   TagIcon,
